@@ -12,15 +12,32 @@
                                 "components/navbar_item/src"
                                 "components/navbar_item/resources"
                                 
+                                "components/database/src"
+                                "components/database/resources"
+                                "components/env/src"
+                                "components/env/resources"
+                                "components/log/src"
+                                "components/log/resources"
+                                "components/spec/src"
+                                "components/spec/resources"
+                                
                                 "bases/rest-api/src"
                                 "bases/rest-api/resources"]
-                  :extra-deps {org.clojure/clojure {:mvn/version "1.11.1"}}}
+                  :extra-deps {org.clojure/clojure {:mvn/version "1.11.1"}
+                               nrepl/nrepl {:mvn/version "1.0.0"}
+                               com.taoensso/timbre {:mvn/version "5.2.1"}
+                               metosin/spec-tools {:mvn/version "0.10.5"}}}
 
             :test {:extra-paths ["components/city/test"
                                  "components/category/test"
                                  "components/article/test"
                                  "components/static_page/test"
                                  "components/navbar_item/test"
+                                 
+                                 "components/database/test"
+                                 "components/env/test"
+                                 "components/log/test"
+                                 "components/spec/test"
                                  
                                  "bases/rest-api/test"]}
 

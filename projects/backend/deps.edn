@@ -4,6 +4,11 @@
         poly/static-page  {:local/root "../../components/static_page"}
         poly/navbar-item  {:local/root "../../components/navbar_item"}
         
+        poly/database {:local/root "../../components/database"}
+        poly/env {:local/root "../../components/env"}
+        poly/log {:local/root "../../components/log"}
+        poly/spec {:local/root "../../components/spec"}
+        
         poly/rest-api {:local/root "../../bases/rest-api"}
         
         org.clojure/clojure {:mvn/version "1.10.1"}
