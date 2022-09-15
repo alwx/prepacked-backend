@@ -1,10 +1,34 @@
-{:aliases  {:dev {:extra-paths ["development/src"]
+{:aliases  {:dev {:extra-paths ["."
+                                "development/src"
+                                
+                                "components/city/src"
+                                "components/city/resources"
+                                "components/category/src"
+                                "components/category/resources"
+                                "components/article/src"
+                                "components/article/resources"
+                                "components/static_page/src"
+                                "components/static_page/resources"
+                                "components/navbar_item/src"
+                                "components/navbar_item/resources"
+                                
+                                "bases/rest-api/src"
+                                "bases/rest-api/resources"]
                   :extra-deps {org.clojure/clojure {:mvn/version "1.11.1"}}}
 
-            :test {:extra-paths []}
+            :test {:extra-paths ["components/city/test"
+                                 "components/category/test"
+                                 "components/article/test"
+                                 "components/static_page/test"
+                                 "components/navbar_item/test"
+                                 
+                                 "bases/rest-api/test"]}
 
             :poly {:main-opts ["-m" "polylith.clj.core.poly-cli.core"]
                    :extra-deps {polyfy/polylith
                                 {:git/url   "https://github.com/polyfy/polylith"
                                  :sha       "ccc261e60f6a875ff30858bf84cf67be105eac6f"
-                                 :deps/root "projects/poly"}}}}}
+                                 :deps/root "projects/poly"}}}
+            :build {:deps {io.github.seancorfield/build-clj {:git/tag "v0.8.3" :git/sha "7ac1f8d"}}
+                   :paths ["build/resources"]        
+                   :ns-default build}}}

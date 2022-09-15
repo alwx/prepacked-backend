@@ -11,3 +11,7 @@ You can also get in touch with the Polylith Team on [Slack](https://clojurians.s
 <h1>prepacked-backend</h1>
 
 <p>Add your workspace documentation here...</p>
+
+# Useful commands
+
+1. Start REPL: `clj -M:nREPL -m nrepl.cmdline`

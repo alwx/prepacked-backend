@@ -1,9 +1,10 @@
 {:top-namespace "co.prepacked"
- :interface-ns "interface"
+ :interface-ns "interface-ns"
  :default-profile-name "default"
  :compact-views #{}
  :vcs {:name "git"
-       :auto-add false}
+       :auto-add true}
  :tag-patterns {:stable "stable-*"
                 :release "v[0-9]*"}
- :projects {"development" {:alias "dev"}}}
+ :projects {"development" {:alias "dev"}
+            "api" {:alias "api"}}}

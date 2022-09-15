@@ -1,0 +1,14 @@
+{:deps {poly/city  {:local/root "../../components/city"}
+        poly/category  {:local/root "../../components/category"}
+        poly/article  {:local/root "../../components/article"}
+        poly/static-page  {:local/root "../../components/static_page"}
+        poly/navbar-item  {:local/root "../../components/navbar_item"}
+        
+        poly/rest-api {:local/root "../../bases/rest-api"}
+        
+        org.clojure/clojure {:mvn/version "1.10.1"}
+        org.clojure/tools.deps.alpha {:mvn/version "0.12.985"}}
+
+ :aliases {:test {:extra-paths []
+                  :extra-deps  {}}
+           :uberjar {:main co.prepacked.rest-api.main}}}
