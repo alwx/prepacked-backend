@@ -1,6 +1,6 @@
 (ns co.prepacked.log.interface-ns
-  (:require [clojure.realworld.log.config :as config]
-            [clojure.realworld.log.core :as core]))
+  (:require [co.prepacked.log.config :as config]
+            [co.prepacked.log.core :as core]))
 
 (defn init []
   (config/init))

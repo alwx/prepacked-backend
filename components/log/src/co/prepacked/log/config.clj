@@ -1,7 +1,7 @@
 (ns co.prepacked.log.config
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.realworld.env.interface :as env]
+            [co.prepacked.env.interface-ns :as env]
             [taoensso.timbre :as timbre])
   (:import (java.util Calendar)
            (java.text SimpleDateFormat)
