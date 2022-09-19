@@ -11,6 +11,8 @@
                                 "components/static_page/resources"
                                 "components/navbar_item/src"
                                 "components/navbar_item/resources"
+                                "components/user/src"
+                                "components/user/resources"
                                 
                                 "components/database/src"
                                 "components/database/resources"
@@ -23,17 +25,18 @@
                                 
                                 "bases/rest-api/src"
                                 "bases/rest-api/resources"]
-                  :extra-deps {compojure/compojure {:mvn/version "1.7.0"}
+                  :extra-deps {buddy/buddy-sign {:mvn/version "3.4.333"}
+                               clojure.java-time/clojure.java-time {:mvn/version "0.3.3"}
+                               compojure/compojure {:mvn/version "1.7.0"}
                                com.taoensso/timbre {:mvn/version "5.2.1"}
                                com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
-                               
+                               crypto-password/crypto-password {:mvn/version "0.3.0"}
                                metosin/spec-tools {:mvn/version "0.10.5"}
                                nrepl/nrepl {:mvn/version "1.0.0"}
                                org.clojure/clojure {:mvn/version "1.11.1"}
                                org.clojure/data.json {:mvn/version "2.4.0"}
-                               org.clojure/java.jdbc {:mvn/version "0.7.5"}
+                               org.clojure/java.jdbc {:mvn/version "0.7.12"}
                                org.xerial/sqlite-jdbc {:mvn/version "3.7.2"}
-                               
                                ring-logger-timbre/ring-logger-timbre {:mvn/version "0.7.6"}
                                ring/ring-jetty-adapter {:mvn/version "1.9.5"}
                                ring/ring-json {:mvn/version "0.5.1"}}}
@@ -43,6 +46,7 @@
                                  "components/article/test"
                                  "components/static_page/test"
                                  "components/navbar_item/test"
+                                 "components/user/test"
                                  
                                  "components/database/test"
                                  "components/env/test"

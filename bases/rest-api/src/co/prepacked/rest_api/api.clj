@@ -15,27 +15,40 @@
 (defroutes public-routes
   (OPTIONS "/**" [] handler/options)
   (GET     "/api/health" [] handler/health)
-  (GET     "/api/cities" [] handler/cities))
+  (GET     "/api/cities" [] handler/cities)
+  (POST    "/api/users/login" [] handler/login)
+  (POST    "/api/users" [] handler/register))
+
+(defroutes private-routes
+  (GET     "/api/user" [] handler/current-user)
+  (PUT     "/api/user" [] handler/update-user))
 
 (defroutes other-routes
   (ANY     "/**" [] handler/other))
 
 (def ^:private app-routes
   (routes
-    public-routes
+    (->
+      private-routes
+      (wrap-routes middleware/wrap-authorization)
+      (wrap-routes middleware/wrap-auth-user))
+    (-> 
+      public-routes
+      (wrap-routes middleware/wrap-auth-user))
     other-routes))
 
 (def app
-  (-> app-routes
-      ring.logger.timbre/wrap-with-logger
-      ring.middleware.keyword-params/wrap-keyword-params
-      ring.middleware.params/wrap-params
-      ring.middleware.multipart-params/wrap-multipart-params
-      ring.middleware.json/wrap-json-params
-      ring.middleware.nested-params/wrap-nested-params
-      middleware/wrap-exceptions
-      ring.middleware.json/wrap-json-response
-      middleware/wrap-cors))
+  (-> 
+    app-routes
+    ring.logger.timbre/wrap-with-logger
+    ring.middleware.keyword-params/wrap-keyword-params
+    ring.middleware.params/wrap-params
+    ring.middleware.multipart-params/wrap-multipart-params
+    ring.middleware.json/wrap-json-params
+    ring.middleware.nested-params/wrap-nested-params
+    middleware/wrap-exceptions
+    ring.middleware.json/wrap-json-response
+    middleware/wrap-cors))
 
 (defn init []
   (try

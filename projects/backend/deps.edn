@@ -3,6 +3,7 @@
         poly/article  {:local/root "../../components/article"}
         poly/static-page  {:local/root "../../components/static_page"}
         poly/navbar-item  {:local/root "../../components/navbar_item"}
+        poly/user {:local/root "../../components/user"}
         
         poly/database {:local/root "../../components/database"}
         poly/env {:local/root "../../components/env"}
