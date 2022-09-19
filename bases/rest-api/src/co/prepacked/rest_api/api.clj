@@ -16,6 +16,7 @@
   (OPTIONS "/**" [] handler/options)
   (GET     "/api/health" [] handler/health)
   (GET     "/api/cities" [] handler/cities)
+  (GET     "/api/cities/:slug" [] handler/city-with-all-dependencies)
   (POST    "/api/users/login" [] handler/login)
   (POST    "/api/users" [] handler/register))
 

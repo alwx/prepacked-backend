@@ -33,8 +33,15 @@
   (handle 404 {:errors {:other ["Route not found."]}}))
 
 (defn cities [_]
-  (let [[ok? res] (city/all-cities)]
+  (let [[ok? res] (city/cities)]
     (handle (if ok? 200 404) res)))
+
+(defn city-with-all-dependencies [req]
+  (let [slug (-> req :params :slug)]
+    (if (s/valid? spec/slug? slug)
+      (let [[ok? res] (city/city-with-all-dependencies slug)]
+        (handle (if ok? 200 404) res))
+      (handle 422 {:errors {:slug ["Cannot find the city."]}}))))
 
 (defn login [req]
   (let [login-data (-> req :params)]
