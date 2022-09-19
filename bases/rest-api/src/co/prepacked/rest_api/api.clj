@@ -21,6 +21,10 @@
   (POST    "/api/users" [] handler/register))
 
 (defroutes private-routes
+  (POST    "/api/cities/:slug/categories" [] handler/add-category)
+  (POST    "/api/cities/:slug/static-pages" [] handler/add-static-page)
+  (POST    "/api/cities/:slug/navbar-items" [] handler/add-navbar-item)
+  
   (GET     "/api/user" [] handler/current-user)
   (PUT     "/api/user" [] handler/update-user))
 

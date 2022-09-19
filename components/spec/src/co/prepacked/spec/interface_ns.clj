@@ -1,5 +1,6 @@
 (ns co.prepacked.spec.interface-ns
-  (:require [co.prepacked.spec.core :as core]))
+  (:require 
+    [co.prepacked.spec.core :as core]))
 
 (def username? core/username?)
 

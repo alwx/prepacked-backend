@@ -1,6 +1,7 @@
 (ns co.prepacked.database.core
-  (:require [clojure.java.io :as io]
-            [co.prepacked.env.interface-ns :as env]))
+  (:require 
+    [clojure.java.io :as io]
+    [co.prepacked.env.interface-ns :as env]))
 
 (defn- db-path []
   (if (contains? env/env :database)

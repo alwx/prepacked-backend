@@ -1,1 +1,3 @@
-(ns co.prepacked.article.interface-ns)
+(ns co.prepacked.article.interface-ns
+  (:require 
+    [co.prepacked.article.core :as core]))

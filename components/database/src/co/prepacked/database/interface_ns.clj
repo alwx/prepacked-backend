@@ -1,6 +1,7 @@
 (ns co.prepacked.database.interface-ns
-  (:require [co.prepacked.database.core :as core]
-            [co.prepacked.database.schema :as schema]))
+  (:require 
+    [co.prepacked.database.core :as core]
+    [co.prepacked.database.schema :as schema]))
 
 (defn db
   ([path]

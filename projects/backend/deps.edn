@@ -1,14 +1,13 @@
-{:deps {poly/city  {:local/root "../../components/city"}
-        poly/category  {:local/root "../../components/category"}
-        poly/article  {:local/root "../../components/article"}
-        poly/static-page  {:local/root "../../components/static_page"}
-        poly/navbar-item  {:local/root "../../components/navbar_item"}
-        poly/user {:local/root "../../components/user"}
-        
+{:deps {poly/article {:local/root "../../components/article"}
+        poly/category {:local/root "../../components/category"}
+        poly/city {:local/root "../../components/city"}
         poly/database {:local/root "../../components/database"}
         poly/env {:local/root "../../components/env"}
         poly/log {:local/root "../../components/log"}
+        poly/navbar-item {:local/root "../../components/navbar_item"}
         poly/spec {:local/root "../../components/spec"}
+        poly/static-page  {:local/root "../../components/static_page"}
+        poly/user {:local/root "../../components/user"}
         
         poly/rest-api {:local/root "../../bases/rest-api"}
         

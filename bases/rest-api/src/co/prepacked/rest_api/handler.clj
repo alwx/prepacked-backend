@@ -57,6 +57,15 @@
         (handle (if ok? 200 404) res))
       (handle 422 {:errors {:body ["Invalid request body."]}}))))
 
+(defn add-category [req]
+  )
+
+(defn add-static-page [req]
+  )
+
+(defn add-navbar-item [req]
+  )
+
 (defn current-user [req]
   (let [auth-user (-> req :auth-user)]
     (handle 200 {:user auth-user})))

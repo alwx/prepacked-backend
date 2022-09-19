@@ -1,6 +1,7 @@
 (ns co.prepacked.log.interface-ns
-  (:require [co.prepacked.log.config :as config]
-            [co.prepacked.log.core :as core]))
+  (:require 
+    [co.prepacked.log.config :as config]
+    [co.prepacked.log.core :as core]))
 
 (defn init []
   (config/init))

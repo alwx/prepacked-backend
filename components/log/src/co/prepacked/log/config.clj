@@ -1,11 +1,13 @@
 (ns co.prepacked.log.config
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [co.prepacked.env.interface-ns :as env]
-            [taoensso.timbre :as timbre])
-  (:import (java.util Calendar)
-           (java.text SimpleDateFormat)
-           (java.io File IOException)))
+  (:require 
+    [clojure.java.io :as io]
+    [clojure.string :as str]
+    [co.prepacked.env.interface-ns :as env]
+    [taoensso.timbre :as timbre])
+  (:import 
+    (java.util Calendar)
+    (java.text SimpleDateFormat)
+    (java.io File IOException)))
 
 (defn- rename-old-create-new-log [^File log ^File old-log]
   (.renameTo log old-log)
@@ -57,20 +59,20 @@
    :rate-limit nil
    :output-fn  :inherit
    :fn
-               (fn [data]
-                 (let [{:keys [instant output_]} data
-                       output-str (force output_)
-                       prev-cal (prev-period-end-cal instant pattern)]
-                   (when-let [log (io/file path)]
-                     (try
-                       (when-not (.exists log)
-                         (io/make-parents log))
-                       (if (.exists log)
-                         (if (<= (.lastModified log) (.getTimeInMillis prev-cal))
-                           (shift-log-period log path prev-cal))
-                         (.createNewFile log))
-                       (spit path (with-out-str (println output-str)) :append true)
-                       (catch IOException _)))))})
+   (fn [data]
+     (let [{:keys [instant output_]} data
+           output-str (force output_)
+           prev-cal (prev-period-end-cal instant pattern)]
+       (when-let [log (io/file path)]
+         (try
+           (when-not (.exists log)
+             (io/make-parents log))
+           (if (.exists log)
+             (if (<= (.lastModified log) (.getTimeInMillis prev-cal))
+               (shift-log-period log path prev-cal))
+             (.createNewFile log))
+           (spit path (with-out-str (println output-str)) :append true)
+           (catch IOException _)))))})
 
 (defn init []
   (if (= "LOCAL" (env/env :environment))

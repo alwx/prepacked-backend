@@ -1,5 +1,6 @@
 (ns co.prepacked.database.schema
-  (:require [clojure.java.jdbc :as jdbc]
+  (:require 
+    [clojure.java.jdbc :as jdbc]
     [co.prepacked.log.interface-ns :as log]
     [honey.sql :as sql]))
 

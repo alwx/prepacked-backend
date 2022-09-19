@@ -1,5 +1,6 @@
 (ns co.prepacked.log.core
-  (:require [taoensso.timbre :as timbre]))
+  (:require 
+    [taoensso.timbre :as timbre]))
 
 (defmacro info [args]
   `(timbre/log! :info :p ~args))

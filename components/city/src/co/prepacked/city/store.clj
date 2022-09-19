@@ -1,4 +1,8 @@
-(ns co.prepacked.city.store)
+(ns co.prepacked.city.store
+  (:require 
+    [clojure.java.jdbc :as jdbc]
+    [co.prepacked.database.interface-ns :as database]
+    [honey.sql :as sql]))
 
 (defn all-cities []
   (let [query {:select [:*]

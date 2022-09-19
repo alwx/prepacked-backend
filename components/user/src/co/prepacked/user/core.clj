@@ -53,7 +53,9 @@
 
 (defn user-by-token [token]
   (try
-    (let [opts {:now (-> now (java-time/to-millis-from-epoch))}
+    (let [opts {:now (-> 
+                       (java-time/instant) 
+                       (java-time/to-millis-from-epoch))}
           claims (buddy.sign.jwt/unsign token (token-secret) opts)
           username (:sub claims)
           user (store/find-by-username username)]

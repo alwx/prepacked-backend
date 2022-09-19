@@ -1,8 +1,6 @@
 (ns co.prepacked.city.core
-  (:require [clojure.java.jdbc :as jdbc]
-            [co.prepacked.database.interface-ns :as database]
-            [co.prepacked.city.store :as store]
-            [honey.sql :as sql]))
+  (:require 
+    [co.prepacked.city.store :as store]))
 
 (defn cities []
   (let [cities (store/all-cities)]

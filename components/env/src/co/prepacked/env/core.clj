@@ -1,5 +1,6 @@
 (ns co.prepacked.env.core
-  (:require [clojure.edn :as edn]
+  (:require 
+    [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.string :as str]))
 
