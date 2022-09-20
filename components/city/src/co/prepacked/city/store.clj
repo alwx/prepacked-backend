@@ -17,5 +17,8 @@
         results (jdbc/query (database/db) (sql/format query))]
     (first results)))
 
+(defn find-by-id [id]
+  (find-by :id id))
+
 (defn find-by-slug [slug]
   (find-by :slug slug))

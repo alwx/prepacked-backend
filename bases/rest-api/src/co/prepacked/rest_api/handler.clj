@@ -2,6 +2,8 @@
   (:require 
     [clojure.edn :as edn]
     [clojure.spec.alpha :as s]
+    [co.prepacked.category.interface-ns :as category]
+    [co.prepacked.category.spec :as category-spec]
     [co.prepacked.city.interface-ns :as city]
     [co.prepacked.env.interface-ns :as env]
     [co.prepacked.spec.interface-ns :as spec]
@@ -58,7 +60,14 @@
       (handle 422 {:errors {:body ["Invalid request body."]}}))))
 
 (defn add-category [req]
-  )
+  (let [slug (-> req :params :slug)
+        category-data (-> req :params :category)]
+    (if (s/valid? spec/slug? slug)
+      (if (s/valid? category-spec/add-category category-data)
+        (let [[ok? res] (category/add-category! slug category-data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}}))
+      (handle 422 {:errors {:slug ["Invalid slug."]}}))))
 
 (defn add-static-page [req]
   )

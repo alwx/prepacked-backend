@@ -22,35 +22,35 @@
 (def category
   (jdbc/create-table-ddl :category
     [[:id :integer :primary :key :autoincrement]
-     [:cityId :integer "references city(id)"]
+     [:city_id :integer "references city(id)"]
      [:slug :text :unique]
      [:title :text]
      [:description :text]]
     {:entities identity}))
 
 (def static-page
-  (jdbc/create-table-ddl :staticPage
+  (jdbc/create-table-ddl :static_page
     [[:id :integer :primary :key :autoincrement]
-     [:cityId :integer "references city(id)"]
+     [:city_id :integer "references city(id)"]
      [:slug :text :unique]
      [:title :text]
      [:content :text]]
     {:entities identity}))
 
 (def navbar-item
-  (jdbc/create-table-ddl :navbarItem
+  (jdbc/create-table-ddl :navbar_item
     [[:id :integer :primary :key :autoincrement]
-     [:cityId :integer "references city(id)"]
+     [:city_id :integer "references city(id)"]
      [:title :text]
      [:priority :integer]
-     [:contentType :text]
-     [:contentId :integer]]
+     [:content_type :text]
+     [:content_id :integer]]
     {:entities identity}))
 
 (defn generate-db [db]
   (jdbc/db-do-commands 
     db
-    [user city]))
+    [user city category static-page navbar-item]))
 
 (defn drop-db [db]
   (jdbc/db-do-commands 
@@ -58,8 +58,8 @@
     [(jdbc/drop-table-ddl :user)
      (jdbc/drop-table-ddl :city)
      (jdbc/drop-table-ddl :category)
-     (jdbc/drop-table-ddl :staticPage)
-     (jdbc/drop-table-ddl :navbarItem)]))
+     (jdbc/drop-table-ddl :static_page)
+     (jdbc/drop-table-ddl :navbar_item)]))
 
 (defn table->schema-item [{:keys [tbl_name sql]}]
   [(keyword tbl_name) sql])
@@ -70,12 +70,12 @@
                :where  [:= :type "table"]}
         tables (jdbc/query db (sql/format query) {:identifiers identity})
         current-schema (select-keys (into {} (map table->schema-item tables))
-                         [:user :city :category :staticPage :navbarItem])
+                         [:user :city :category :static_page :navbar_item])
         valid-schema {:user user 
                       :city city
                       :category category
-                      :staticPage static-page
-                      :navbarItem navbar-item}]
+                      :static_page static-page
+                      :navbar_item navbar-item}]
     (if (= valid-schema current-schema)
       true
       (do

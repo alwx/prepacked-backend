@@ -2,5 +2,8 @@
   (:require 
     [co.prepacked.category.core :as core]))
 
-(defn city-categories [city-slug]
-  (core/city-categories city-slug))
+(defn city-categories [city-id]
+  (core/city-categories city-id))
+
+(defn add-category! [city-slug category-input]
+  (core/add-category! city-slug category-input))

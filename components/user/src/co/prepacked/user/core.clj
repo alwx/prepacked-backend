@@ -39,9 +39,9 @@
 
 (defn register! [{:keys [username email password]}]
   (if-let [_ (store/find-by-email email)]
-    [false {:errors {:email ["A user with provided email already exists."]}}]
+    [false {:errors {:email ["A user with the provided email already exists."]}}]
     (if-let [_ (store/find-by-username username)]
-      [false {:errors {:username ["A user with provided username already exists."]}}]
+      [false {:errors {:username ["A user with the provided username already exists."]}}]
       (let [new-token (generate-token email username)
             user-input {:email    email
                         :username username
@@ -70,12 +70,12 @@
         (not (nil? email))
         (not= email (:email auth-user))
         (not (nil? (store/find-by-email email))))
-    [false {:errors {:email ["A user with provided email already exists."]}}]
+    [false {:errors {:email ["A user with the provided email already exists."]}}]
     (if (and 
           (not (nil? username))
           (not= username (:username auth-user))
           (not (nil? (store/find-by-username username))))
-      [false {:errors {:username ["A user with provided username already exists."]}}]
+      [false {:errors {:username ["A user with the provided username already exists."]}}]
       (let [email-to-use (if email email (:email auth-user))
             user-input (filter #(-> % val nil? not)
                          {:password (when password (encrypt-password password))
@@ -84,4 +84,4 @@
         (store/update-user! (:id auth-user) user-input)
         (if-let [updated-user (store/find-by-email email-to-use)]
           [true (user->visible-user updated-user (:token auth-user))]
-          [false {:errors {:other ["Cannot update user."]}}])))))
+          [false {:errors {:other ["Cannot update the user."]}}])))))
