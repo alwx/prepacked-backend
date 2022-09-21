@@ -22,8 +22,14 @@
 
 (defroutes private-routes
   (POST    "/api/cities/:slug/categories" [] handler/add-category)
-  (POST    "/api/cities/:slug/static-pages" [] handler/add-static-page)
-  (POST    "/api/cities/:slug/navbar-items" [] handler/add-navbar-item)
+  (PUT     "/api/cities/:slug/categories/:category_slug" [] handler/edit-category)
+  (DELETE  "/api/cities/:slug/categories/:category_slug" [] handler/delete-category)
+  (POST    "/api/cities/:slug/static_pages" [] handler/add-static-page)
+  (PUT     "/api/cities/:slug/static_pages/:static_page_slug" [] handler/edit-static-page)
+  (DELETE  "/api/cities/:slug/static_pages/:static_page_slug" [] handler/delete-static-page)
+  (POST    "/api/cities/:slug/navbar_items" [] handler/add-navbar-item)
+  (PUT     "/api/cities/:slug/navbar_items/:navbar_item_id" [] handler/edit-navbar-item)
+  (DELETE  "/api/cities/:slug/navbar_items/:navbar_item_id" [] handler/delete-navbar-item)
   
   (GET     "/api/user" [] handler/current-user)
   (PUT     "/api/user" [] handler/update-user))

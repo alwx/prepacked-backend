@@ -4,6 +4,10 @@
     [clojure.spec.alpha :as s]
     [co.prepacked.category.interface-ns :as category]
     [co.prepacked.category.spec :as category-spec]
+    [co.prepacked.navbar-item.interface-ns :as navbar-item]
+    [co.prepacked.navbar-item.spec :as navbar-item-spec]
+    [co.prepacked.static-page.interface-ns :as static-page]
+    [co.prepacked.static-page.spec :as static-page-spec]
     [co.prepacked.city.interface-ns :as city]
     [co.prepacked.env.interface-ns :as env]
     [co.prepacked.spec.interface-ns :as spec]
@@ -69,10 +73,42 @@
         (handle 422 {:errors {:body ["Invalid request body."]}}))
       (handle 422 {:errors {:slug ["Invalid slug."]}}))))
 
+(defn edit-category [req]
+  )
+
+(defn delete-category [req]
+  )
+
 (defn add-static-page [req]
+  (let [slug (-> req :params :slug)
+        static-page-data (-> req :params :static_page)]
+    (if (s/valid? spec/slug? slug)
+      (if (s/valid? static-page-spec/add-static-page static-page-data)
+        (let [[ok? res] (static-page/add-static-page! slug static-page-data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}}))
+      (handle 422 {:errors {:slug ["Invalid slug."]}}))))
+
+(defn edit-static-page [req]
+  )
+
+(defn delete-static-page [req]
   )
 
 (defn add-navbar-item [req]
+  (let [slug (-> req :params :slug)
+        navbar-item-data (-> req :params :navbar_item)]
+    (if (s/valid? spec/slug? slug)
+      (if (s/valid? navbar-item-spec/add-navbar-item navbar-item-data)
+        (let [[ok? res] (navbar-item/add-navbar-item! slug navbar-item-data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}}))
+      (handle 422 {:errors {:slug ["Invalid slug."]}}))))
+
+(defn edit-navbar-item [req]
+  )
+
+(defn delete-navbar-item [req]
   )
 
 (defn current-user [req]

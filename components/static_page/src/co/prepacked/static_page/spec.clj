@@ -6,7 +6,6 @@
 
 (def add-static-page
   (ds/spec {:name :core/add-static-page
-            :spec {:city_id pos-int?
-                   :slug    spec/slug?
+            :spec {:slug    spec/slug?
                    :title   spec/non-empty-string?
                    :content spec/non-empty-string?}}))
