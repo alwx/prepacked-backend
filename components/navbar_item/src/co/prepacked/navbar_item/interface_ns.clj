@@ -7,3 +7,9 @@
 
 (defn add-navbar-item! [city-slug navbar-item-input]
   (core/add-navbar-item! city-slug navbar-item-input))
+
+(defn update-navbar-item! [city-slug navbar-item-id navbar-item-input]
+  (core/update-navbar-item! city-slug navbar-item-id navbar-item-input))
+
+(defn delete-navbar-item! [city-slug navbar-item-id]
+  (core/delete-navbar-item! city-slug navbar-item-id))

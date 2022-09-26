@@ -31,3 +31,8 @@
                :set    static-page-input
                :where  [:= :id id]}]
     (jdbc/execute! (database/db) (sql/format query))))
+
+(defn delete-static-page! [id]
+  (let [query {:delete-from :static_page
+               :where [:= :id id]}]
+    (jdbc/execute! (database/db) (sql/format query))))

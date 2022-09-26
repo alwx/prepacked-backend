@@ -43,8 +43,7 @@
      [:city_id :integer "references city(id)"]
      [:title :text]
      [:priority :integer]
-     [:content_type :text]
-     [:content_id :integer]]
+     [:link :text]]
     {:entities identity}))
 
 (defn generate-db [db]

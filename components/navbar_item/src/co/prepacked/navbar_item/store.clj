@@ -31,3 +31,8 @@
                :set    navbar-item-input
                :where  [:= :id id]}]
     (jdbc/execute! (database/db) (sql/format query))))
+
+(defn delete-navbar-item! [id]
+  (let [query {:delete-from :navbar_item
+               :where [:= :id id]}]
+    (jdbc/execute! (database/db) (sql/format query))))

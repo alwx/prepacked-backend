@@ -14,7 +14,7 @@
     [co.prepacked.user.interface-ns :as user]
     [co.prepacked.user.spec :as user-spec]))
 
-(defn- parse-query-param [param]
+(defn parse-query-param [param]
   (if (string? param)
     (try
       (edn/read-string param)
@@ -28,6 +28,11 @@
     :body   body})
   ([status]
    (handle status nil)))
+
+(defmacro with-valid-slug [slug body]
+  `(if (s/valid? spec/slug? ~slug)
+     ~body
+     (handle 422 {:errors {:slug ["Invalid slug."]}})))
 
 (defn options [_]
   (handle 200))
@@ -66,50 +71,80 @@
 (defn add-category [req]
   (let [slug (-> req :params :slug)
         category-data (-> req :params :category)]
-    (if (s/valid? spec/slug? slug)
+    (with-valid-slug slug
       (if (s/valid? category-spec/add-category category-data)
         (let [[ok? res] (category/add-category! slug category-data)]
-          (handle (if ok? 200 404) res))
-        (handle 422 {:errors {:body ["Invalid request body."]}}))
-      (handle 422 {:errors {:slug ["Invalid slug."]}}))))
+          (handle (if ok? 201 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
 (defn edit-category [req]
-  )
+  (let [slug (-> req :params :slug)
+        category-slug (-> req :params :category_slug)
+        category-data (-> req :params :category)]
+    (with-valid-slug slug
+      (if (s/valid? category-spec/update-category category-data)
+        (let [[ok? res] (category/update-category! slug category-slug category-data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
 (defn delete-category [req]
-  )
+  (let [slug (-> req :params :slug)
+        category-slug (-> req :params :category_slug)]
+    (with-valid-slug slug 
+      (let [[ok? res] (category/delete-category! slug category-slug)]
+        (handle (if ok? 200 404) res)))))
 
 (defn add-static-page [req]
   (let [slug (-> req :params :slug)
         static-page-data (-> req :params :static_page)]
-    (if (s/valid? spec/slug? slug)
+    (with-valid-slug slug
       (if (s/valid? static-page-spec/add-static-page static-page-data)
         (let [[ok? res] (static-page/add-static-page! slug static-page-data)]
           (handle (if ok? 200 404) res))
-        (handle 422 {:errors {:body ["Invalid request body."]}}))
-      (handle 422 {:errors {:slug ["Invalid slug."]}}))))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
 (defn edit-static-page [req]
-  )
+  (let [slug (-> req :params :slug)
+        static-page-slug (-> req :params :static_page_slug)
+        static-page-data (-> req :params :static_page)]
+    (with-valid-slug slug
+      (if (s/valid? static-page-spec/update-static-page static-page-data)
+        (let [[ok? res] (static-page/update-static-page! slug static-page-slug static-page-data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
 (defn delete-static-page [req]
-  )
+  (let [slug (-> req :params :slug)
+        static-page-slug (-> req :params :static_page_slug)]
+    (with-valid-slug slug
+      (let [[ok? res] (static-page/delete-static-page! slug static-page-slug)]
+        (handle (if ok? 200 404) res)))))
 
 (defn add-navbar-item [req]
   (let [slug (-> req :params :slug)
         navbar-item-data (-> req :params :navbar_item)]
-    (if (s/valid? spec/slug? slug)
+    (with-valid-slug slug
       (if (s/valid? navbar-item-spec/add-navbar-item navbar-item-data)
         (let [[ok? res] (navbar-item/add-navbar-item! slug navbar-item-data)]
           (handle (if ok? 200 404) res))
-        (handle 422 {:errors {:body ["Invalid request body."]}}))
-      (handle 422 {:errors {:slug ["Invalid slug."]}}))))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
 (defn edit-navbar-item [req]
-  )
+  (let [slug (-> req :params :slug)
+        navbar-item-id (-> req :params :navbar_item_id)
+        navbar-item-data (-> req :params :navbar_item)]
+    (with-valid-slug slug
+      (if (s/valid? navbar-item-spec/update-navbar-item navbar-item-data)
+        (let [[ok? res] (navbar-item/update-navbar-item! slug navbar-item-id navbar-item-data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
 (defn delete-navbar-item [req]
-  )
+  (let [slug (-> req :params :slug)
+        navbar-item-id (-> req :params :navbar_item_id)]
+    (with-valid-slug slug
+      (let [[ok? res] (navbar-item/delete-navbar-item! slug navbar-item-id)]
+        (handle (if ok? 200 404) res)))))
 
 (defn current-user [req]
   (let [auth-user (-> req :auth-user)]

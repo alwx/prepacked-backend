@@ -7,3 +7,9 @@
 
 (defn add-static-page! [city-slug static-page-input]
   (core/add-static-page! city-slug static-page-input))
+
+(defn update-static-page! [city-slug static-page-slug static-page-input]
+  (core/update-static-page! city-slug static-page-slug static-page-input))
+
+(defn delete-static-page! [city-slug static-page-slug]
+  (core/delete-static-page! city-slug static-page-slug))

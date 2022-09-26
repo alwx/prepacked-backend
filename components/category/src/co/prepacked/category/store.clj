@@ -31,3 +31,8 @@
                :set    category-input
                :where  [:= :id id]}]
     (jdbc/execute! (database/db) (sql/format query))))
+
+(defn delete-category! [id]
+  (let [query {:delete-from :category
+               :where [:= :id id]}]
+    (jdbc/execute! (database/db) (sql/format query))))
