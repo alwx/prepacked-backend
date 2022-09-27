@@ -1,9 +1,12 @@
 (ns co.prepacked.places-list.interface-ns
   (:require
-    [co.prepacked.places-list.core :as core]))
+   [co.prepacked.places-list.core :as core]))
 
-(defn city-places-lists [city-id]
-  (core/city-places-lists city-id))
+(defn get-places-lists [city-id]
+  (core/get-places-lists city-id))
+
+(defn places-list-with-all-dependencies [city-slug places-list-slug]
+  (core/places-list-with-all-dependencies city-slug places-list-slug))
 
 (defn add-places-list! [city-slug places-list-input]
   (core/add-places-list! city-slug places-list-input))

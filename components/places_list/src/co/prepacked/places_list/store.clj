@@ -4,7 +4,7 @@
     [co.prepacked.database.interface-ns :as database]
     [honey.sql :as sql]))
 
-(defn all-places-lists [city-id]
+(defn get-places-lists [city-id]
   (let [query {:select [:*]
                :from   [:places_list]
                :where  [:= :city_id city-id]}

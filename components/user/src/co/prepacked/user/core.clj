@@ -43,9 +43,12 @@
     (if-let [_ (store/find-by-username username)]
       [false {:errors {:username ["A user with the provided username already exists."]}}]
       (let [new-token (generate-token email username)
+            now (java-time/instant)
             user-input {:email    email
                         :username username
-                        :password (encrypt-password password)}]
+                        :password (encrypt-password password)
+                        :created_at now
+                        :updated_at now}]
         (store/insert-user! user-input)
         (if-let [user (store/find-by-email email)]
           [true (user->visible-user user new-token)]
@@ -77,10 +80,12 @@
           (not (nil? (store/find-by-username username))))
       [false {:errors {:username ["A user with the provided username already exists."]}}]
       (let [email-to-use (if email email (:email auth-user))
+            now (java-time/instant)
             user-input (filter #(-> % val nil? not)
                          {:password (when password (encrypt-password password))
                           :email    (when email email)
-                          :username (when username username)})]
+                          :username (when username username)
+                          :updated_at now})]
         (store/update-user! (:id auth-user) user-input)
         (if-let [updated-user (store/find-by-email email-to-use)]
           [true (user->visible-user updated-user (:token auth-user))]

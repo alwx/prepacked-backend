@@ -4,7 +4,7 @@
    [co.prepacked.database.interface-ns :as database]
    [honey.sql :as sql]))
 
-(defn all-city-navbar-items [city-id]
+(defn get-navbar-items [city-id]
   (let [query {:select [:*]
                :from   [:navbar_item]
                :where  [:= :city_id city-id]}

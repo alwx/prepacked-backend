@@ -3,13 +3,13 @@
    [co.prepacked.navbar-item.store :as store]
    [co.prepacked.city.store :as city.store]))
 
-(defn city-navbar-items [city-id]
-  (let [navbar-items (store/all-city-navbar-items city-id)]
+(defn get-navbar-items [city-id]
+  (let [navbar-items (store/get-navbar-items city-id)]
     [true navbar-items]))
 
 (defn add-navbar-item! [city-slug navbar-item-data]
   (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
-    (let [navbar-item-data' (assoc navbar-item-data :city-id city-id)
+    (let [navbar-item-data' (assoc navbar-item-data :city_id city-id)
           navbar-item-id (store/insert-navbar-item! navbar-item-data')]
       (if-let [navbar-item (store/find-by-id city-id navbar-item-id)]
         [true navbar-item]
@@ -24,7 +24,7 @@
         (if-let [navbar-item (store/find-by-id city-id navbar-item-id)]
           [true navbar-item]
           [false {:errors {:other ["Cannot update the navigation bar item in the database."]}}]))
-      [false {:errors {:slug ["A navigation bar item with the provided id doesn't exist."]}}])
+      [false {:errors {:navbar_item ["A navigation bar item with the provided id doesn't exist."]}}])
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn delete-navbar-item! [city-slug navbar-item-id]

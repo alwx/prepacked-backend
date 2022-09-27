@@ -6,6 +6,8 @@
    [co.prepacked.navbar-item.spec :as navbar-item-spec]
    [co.prepacked.places-list.interface-ns :as places-list]
    [co.prepacked.places-list.spec :as places-list-spec]
+   [co.prepacked.place.interface-ns :as place]
+   [co.prepacked.place.spec :as place-spec]
    [co.prepacked.static-page.interface-ns :as static-page]
    [co.prepacked.static-page.spec :as static-page-spec]
    [co.prepacked.city.interface-ns :as city]
@@ -49,13 +51,17 @@
 
 (defn city-with-all-dependencies [req]
   (let [slug (-> req :params :slug)]
-    (if (s/valid? spec/slug? slug)
+    (with-valid-slug slug
       (let [[ok? res] (city/city-with-all-dependencies slug)]
-        (handle (if ok? 200 404) res))
-      (handle 422 {:errors {:slug ["Cannot find the city."]}}))))
+        (handle (if ok? 200 404) res)))))
 
-(defn city-places-list [req]
-  )
+(defn places-list-with-all-dependencies [req]
+  (let [slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)]
+    (with-valid-slug slug
+      (with-valid-slug places-list-slug
+        (let [[ok? res] (places-list/places-list-with-all-dependencies slug places-list-slug)]
+          (handle (if ok? 200 404) res))))))
 
 (defn login [req]
   (let [login-data (-> req :params)]
@@ -97,11 +103,34 @@
       (let [[ok? res] (places-list/delete-places-list! slug places-list-slug)]
         (handle (if ok? 200 404) res)))))
 
-(defn add-place [req])
+(defn add-place [req]
+  (let [slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)
+        place-data (-> req :params :place)]
+    (with-valid-slug slug
+      (if (s/valid? place-spec/add-place place-data)
+        (let [[ok? res] (place/add-place! slug places-list-slug place-data)]
+          (handle (if ok? 201 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
-(defn edit-place [req])
+(defn edit-place [req]
+  (let [slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)
+        place-id (-> req :params :place_id)
+        place-data (-> req :params :place)]
+    (with-valid-slug slug
+      (if (s/valid? place-spec/update-place place-data)
+        (let [[ok? res] (place/update-place! slug places-list-slug place-id place-data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
-(defn delete-place [req])
+(defn delete-place [req]
+  (let [slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)
+        place-id (-> req :params :place_id)]
+    (with-valid-slug slug
+      (let [[ok? res] (place/delete-place! slug places-list-slug place-id)]
+        (handle (if ok? 200 404) res)))))
 
 (defn add-static-page [req]
   (let [slug (-> req :params :slug)

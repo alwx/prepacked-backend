@@ -1,12 +1,25 @@
 (ns co.prepacked.places-list.core
   (:require
    [java-time]
+   [co.prepacked.place.interface-ns :as place]
    [co.prepacked.places-list.store :as store]
    [co.prepacked.city.store :as city.store]))
 
-(defn city-places-lists [city-id]
-  (let [places-lists (store/all-places-lists city-id)]
+(defn get-places-lists [city-id]
+  (let [places-lists (store/get-places-lists city-id)]
     [true places-lists]))
+
+(defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
+  (let [[_ places] (place/get-places city_id id)]
+    (assoc places-list 
+           :places places)))
+
+(defn places-list-with-all-dependencies [city-slug places-list-slug]
+  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+    (if-let [places-list (store/find-by-slug city-id places-list-slug)]
+      [true {:places_list (add-places-list-dependencies places-list)}]
+      [false {:errors {:places_list ["Cannot find the places list."]}}])
+    [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn add-places-list! [city-slug {:keys [slug] :as places-list-data}]
   (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
@@ -33,7 +46,7 @@
         (if-let [places-list (store/find-by-slug city-id (:slug places-list-data'))]
           [true places-list]
           [false {:errors {:other ["Cannot update the places list in the database."]}}]))
-      [false {:errors {:slug ["A places list with the provided slug doesn't exist."]}}])
+      [false {:errors {:places_list ["A places list with the provided slug doesn't exist."]}}])
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn delete-places-list! [city-slug places-list-slug]

@@ -4,8 +4,8 @@
    [co.prepacked.static-page.store :as store]
    [co.prepacked.city.store :as city.store]))
 
-(defn city-static-pages [city-id]
-  (let [static-pages (store/all-city-static-pages city-id)]
+(defn get-static-pages [city-id]
+  (let [static-pages (store/get-static-pages city-id)]
     [true static-pages]))
 
 (defn add-static-page! [city-slug {:keys [slug] :as static-page-data}]
@@ -34,7 +34,7 @@
         (if-let [static-page (store/find-by-slug city-id (:slug static-page-data))]
           [true static-page]
           [false {:errors {:other ["Cannot update the static page in the database."]}}]))
-      [false {:errors {:slug ["A static page with the provided slug doesn't exist."]}}])
+      [false {:errors {:static_page ["A static page with the provided slug doesn't exist."]}}])
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn delete-static-page! [city-slug static-page-slug]
