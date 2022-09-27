@@ -17,6 +17,3 @@
 
 (defn drop-db [db]
   (schema/drop-db db))
-
-(defn valid-schema? [db]
-  (schema/valid-schema? db))

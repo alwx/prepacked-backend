@@ -17,13 +17,17 @@
   (GET     "/api/health" [] handler/health)
   (GET     "/api/cities" [] handler/cities)
   (GET     "/api/cities/:slug" [] handler/city-with-all-dependencies)
+  (GET     "/api/cities/:slug/places_lists/:places_list_slug" [] handler/city-places-list)
   (POST    "/api/users/login" [] handler/login)
   (POST    "/api/users" [] handler/register))
 
 (defroutes private-routes
-  (POST    "/api/cities/:slug/categories" [] handler/add-category)
-  (PUT     "/api/cities/:slug/categories/:category_slug" [] handler/edit-category)
-  (DELETE  "/api/cities/:slug/categories/:category_slug" [] handler/delete-category)
+  (POST    "/api/cities/:slug/places_lists" [] handler/add-places-list)
+  (PUT     "/api/cities/:slug/places_lists/:places_list_slug" [] handler/edit-places-list)
+  (DELETE  "/api/cities/:slug/places_lists/:places_list" [] handler/delete-places-list)
+  (POST    "/api/cities/:slug/places_lists/:places_list/places" [] handler/add-place)
+  (PUT     "/api/cities/:slug/places_lists/:places_list/places/:place_slug" [] handler/edit-place)
+  (DELETE  "/api/cities/:slug/places_lists/:places_list/places/:place_slug" [] handler/delete-place)
   (POST    "/api/cities/:slug/static_pages" [] handler/add-static-page)
   (PUT     "/api/cities/:slug/static_pages/:static_page_slug" [] handler/edit-static-page)
   (DELETE  "/api/cities/:slug/static_pages/:static_page_slug" [] handler/delete-static-page)
@@ -66,11 +70,7 @@
     (log/init)
     (let [db (database/db)]
       (if (database/db-exists?)
-        (if (database/valid-schema? db)
-          (log/info "Database schema is valid.")
-          (do
-            (log/warn "Please fix database schema and restart")
-            (System/exit 1)))
+        (log/info "Database exists.")
         (do
           (log/info "Generating database.")
           (database/generate-db db)

@@ -3,7 +3,7 @@
     [co.prepacked.rest-api.main :as rest-api]
     [nrepl.server :as nrepl]))
 
-(defonce repl-server 
+(defn start-repl-server! [] 
   (nrepl/start-server :port 7888))
 
 (defn start-rest-api! []
@@ -17,5 +17,9 @@
   (rest-api/stop!))
 
 (comment
+  (start-repl-server!)
+
   (start-rest-api!)
-  (stop-rest-api!))
+  (stop-rest-api!)
+  
+  )

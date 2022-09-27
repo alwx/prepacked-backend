@@ -1,82 +1,86 @@
 (ns co.prepacked.database.schema
-  (:require 
-    [clojure.java.jdbc :as jdbc]
-    [co.prepacked.log.interface-ns :as log]
-    [honey.sql :as sql]))
+  (:require
+   [clojure.java.jdbc :as jdbc]))
 
 (def user
-  (jdbc/create-table-ddl :user
+  [(jdbc/create-table-ddl
+    :user
     [[:id :integer :primary :key :autoincrement]
      [:email :text :unique]
      [:username :text :unique]
-     [:password :text]]
-    {:entities identity}))
+     [:password :text]
+     [:created_at :datetime]
+     [:updated_at :datetime]]
+    {:entities identity})])
 
 (def city
-  (jdbc/create-table-ddl :city
+  [(jdbc/create-table-ddl
+    :city
     [[:id :integer :primary :key :autoincrement]
      [:slug :text :unique]
      [:name :text]]
-    {:entities identity}))
+    {:entities identity})
+   "INSERT INTO city (slug, name) VALUES ('vienna', 'Vienna')"])
 
-(def category
-  (jdbc/create-table-ddl :category
+(def places-list
+  [(jdbc/create-table-ddl
+    :places_list
     [[:id :integer :primary :key :autoincrement]
      [:city_id :integer "references city(id)"]
-     [:slug :text :unique]
+     [:slug :text]
      [:title :text]
-     [:description :text]]
-    {:entities identity}))
+     [:description :text]
+     [:created_at :datetime]
+     [:updated_at :datetime]]
+    {:entities identity})
+   "CREATE UNIQUE INDEX idx_places_list_city_id_slug ON places_list (city_id, slug)"])
+
+(def place
+  [(jdbc/create-table-ddl
+    :place
+    [[:id :integer :primary :key :autoincrement]
+     [:city_id :integer "references city(id)"]
+     [:places_list_id :integer "references places_list(id)"]
+     [:address :text]
+     [:title :text]
+     [:description :text]
+     [:created_at :datetime]
+     [:updated_at :datetime]])])
 
 (def static-page
-  (jdbc/create-table-ddl :static_page
+  [(jdbc/create-table-ddl
+    :static_page
     [[:id :integer :primary :key :autoincrement]
      [:city_id :integer "references city(id)"]
-     [:slug :text :unique]
+     [:slug :text]
      [:title :text]
-     [:content :text]]
-    {:entities identity}))
+     [:content :text]
+     [:created_at :datetime]
+     [:updated_at :datetime]]
+    {:entities identity})
+   "CREATE UNIQUE INDEX idx_static_page_city_id_slug ON static_page (city_id, slug)"])
 
 (def navbar-item
-  (jdbc/create-table-ddl :navbar_item
+  [(jdbc/create-table-ddl
+    :navbar_item
     [[:id :integer :primary :key :autoincrement]
      [:city_id :integer "references city(id)"]
      [:title :text]
      [:priority :integer]
      [:link :text]]
-    {:entities identity}))
+    {:entities identity})])
 
 (defn generate-db [db]
-  (jdbc/db-do-commands 
-    db
-    [user city category static-page navbar-item]))
+  (jdbc/db-do-commands
+   db
+   (concat user city places-list place static-page navbar-item)))
 
 (defn drop-db [db]
-  (jdbc/db-do-commands 
-    db
-    [(jdbc/drop-table-ddl :user)
-     (jdbc/drop-table-ddl :city)
-     (jdbc/drop-table-ddl :category)
-     (jdbc/drop-table-ddl :static_page)
-     (jdbc/drop-table-ddl :navbar_item)]))
-
-(defn table->schema-item [{:keys [tbl_name sql]}]
-  [(keyword tbl_name) sql])
-
-(defn valid-schema? [db]
-  (let [query {:select [:*]
-               :from   [:sqlite_master]
-               :where  [:= :type "table"]}
-        tables (jdbc/query db (sql/format query) {:identifiers identity})
-        current-schema (select-keys (into {} (map table->schema-item tables))
-                         [:user :city :category :static_page :navbar_item])
-        valid-schema {:user user 
-                      :city city
-                      :category category
-                      :static_page static-page
-                      :navbar_item navbar-item}]
-    (if (= valid-schema current-schema)
-      true
-      (do
-        (log/warn "Current schema is invalid. Please correct it and restart the server.")
-        false))))
+  (jdbc/db-do-commands
+   db
+   [(jdbc/drop-table-ddl :user)
+    (jdbc/drop-table-ddl :city)
+    (jdbc/drop-table-ddl :places_list)
+    (jdbc/drop-table-ddl :place)
+    (jdbc/drop-table-ddl :static_page)
+    (jdbc/drop-table-ddl :navbar_item)]))

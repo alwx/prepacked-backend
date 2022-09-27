@@ -3,10 +3,10 @@
                                 
                                 "components/city/src"
                                 "components/city/resources"
-                                "components/category/src"
-                                "components/category/resources"
-                                "components/article/src"
-                                "components/article/resources"
+                                "components/places_list/src"
+                                "components/places_list/resources"
+                                "components/place/src"
+                                "components/place/resources"
                                 "components/static_page/src"
                                 "components/static_page/resources"
                                 "components/navbar_item/src"
@@ -42,8 +42,8 @@
                                ring/ring-json {:mvn/version "0.5.1"}}}
 
             :test {:extra-paths ["components/city/test"
-                                 "components/category/test"
-                                 "components/article/test"
+                                 "components/places_list/test"
+                                 "components/place/test"
                                  "components/static_page/test"
                                  "components/navbar_item/test"
                                  "components/user/test"

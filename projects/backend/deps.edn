@@ -1,16 +1,16 @@
-{:deps {poly/article {:local/root "../../components/article"}
-        poly/category {:local/root "../../components/category"}
-        poly/city {:local/root "../../components/city"}
+{:deps {poly/city {:local/root "../../components/city"}
         poly/database {:local/root "../../components/database"}
         poly/env {:local/root "../../components/env"}
         poly/log {:local/root "../../components/log"}
         poly/navbar-item {:local/root "../../components/navbar_item"}
+        poly/places-list {:local/root "../../components/places_list"}
+        poly/place {:local/root "../../components/place"}
         poly/spec {:local/root "../../components/spec"}
         poly/static-page  {:local/root "../../components/static_page"}
         poly/user {:local/root "../../components/user"}
-        
+
         poly/rest-api {:local/root "../../bases/rest-api"}
-        
+
         org.clojure/clojure {:mvn/version "1.10.1"}
         org.clojure/tools.deps.alpha {:mvn/version "0.12.985"}}
 
