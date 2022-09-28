@@ -34,6 +34,7 @@
      [:slug :text]
      [:title :text]
      [:description :text]
+     [:priority :integer "default 0"]
      [:created_at :datetime]
      [:updated_at :datetime]]
     {:entities identity})
@@ -48,6 +49,7 @@
      [:address :text]
      [:title :text]
      [:description :text]
+     [:priority :integer "default 0"]
      [:osm_place_id :integer]
      [:osm_lat :real]
      [:osm_lon :real]
@@ -82,7 +84,7 @@
     [[:id :integer :primary :key :autoincrement]
      [:city_id :integer "references city(id)"]
      [:title :text]
-     [:priority :integer]
+     [:priority :integer "default 0"]
      [:link :text]]
     {:entities identity})])
 
@@ -136,4 +138,3 @@
         (log/warn "There are some differences between the expected and the actual db schema.")
         (log/warn (map-difference valid-schema current-schema))
         false))))
-
