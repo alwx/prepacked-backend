@@ -29,6 +29,7 @@
 
 (defn -main [& _args]
   (start! 
-    (if (contains? env/env :port)
-      (env/env :port)
-      6003)))
+   (or (env/get-var :port)
+       (do
+         (log/warn "`:port` needs to be added to `env.edn`!")
+         (System/exit 1)))))

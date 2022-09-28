@@ -1,6 +1,9 @@
 (ns co.prepacked.database.schema
   (:require
-   [clojure.java.jdbc :as jdbc]))
+   [clojure.java.jdbc :as jdbc]
+   [clojure.set]
+   [honey.sql :as sql]
+   [co.prepacked.log.interface-ns :as log]))
 
 (def user
   [(jdbc/create-table-ddl
@@ -18,9 +21,10 @@
     :city
     [[:id :integer :primary :key :autoincrement]
      [:slug :text :unique]
-     [:name :text]]
+     [:name :text]
+     [:country_code :text]]
     {:entities identity})
-   "INSERT INTO city (slug, name) VALUES ('vienna', 'Vienna')"])
+   "INSERT INTO city (slug, name, country_code) VALUES ('vienna', 'Vienna', 'at')"])
 
 (def places-list
   [(jdbc/create-table-ddl
@@ -44,6 +48,18 @@
      [:address :text]
      [:title :text]
      [:description :text]
+     [:osm_place_id :integer]
+     [:osm_lat :real]
+     [:osm_lon :real]
+     [:osm_amenity :text]
+     [:osm_city :text]
+     [:osm_city_district :text]
+     [:osm_country_code :text]
+     [:osm_house_number :text]
+     [:osm_postcode :text]
+     [:osm_road :text]
+     [:osm_suburb :text]
+     [:osm_display_name :text]
      [:created_at :datetime]
      [:updated_at :datetime]])])
 
@@ -84,3 +100,40 @@
     (jdbc/drop-table-ddl :place)
     (jdbc/drop-table-ddl :static_page)
     (jdbc/drop-table-ddl :navbar_item)]))
+
+(defn- table->schema-item [{:keys [tbl_name sql]}]
+  [(keyword tbl_name) sql])
+
+(defn- map-difference [m1 m2]
+  (let [ks1 (set (keys m1))
+        ks2 (set (keys m2))
+        ks1-ks2 (clojure.set/difference ks1 ks2)
+        ks2-ks1 (clojure.set/difference ks2 ks1)
+        ks1*ks2 (clojure.set/intersection ks1 ks2)]
+    (merge (select-keys m1 ks1-ks2)
+           (select-keys m2 ks2-ks1)
+           (select-keys m1
+                        (remove (fn [k] (= (m1 k) (m2 k)))
+                                ks1*ks2)))))
+
+(defn check-sqlite-schema [db]
+  (let [query {:select [:*]
+               :from   [:sqlite_master]
+               :where  [:= :type "table"]}
+        tables (jdbc/query db (sql/format query) {:identifiers identity})
+        current-schema (select-keys (into {} (map table->schema-item tables))
+                                    [:user :city :places_list :place :static_page :navbar_item])
+        valid-schema {:user (first user)
+                      :city (first city)
+                      :places_list (first places-list)
+                      :place (first place)
+                      :static_page (first static-page)
+                      :navbar_item (first navbar-item)}]
+    ()
+    (if (= valid-schema current-schema)
+      true
+      (do
+        (log/warn "There are some differences between the expected and the actual db schema.")
+        (log/warn (map-difference valid-schema current-schema))
+        false))))
+

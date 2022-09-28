@@ -7,11 +7,7 @@
   (nrepl/start-server :port 7888))
 
 (defn start-rest-api! []
-  (rest-api/start! 
-    (Integer/valueOf
-      (or (System/getenv "port")
-        "6003")
-      10)))
+  (rest-api/start! 6003))
 
 (defn stop-rest-api! [] 
   (rest-api/stop!))

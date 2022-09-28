@@ -3,6 +3,7 @@
    [java-time]
    [co.prepacked.city.store :as city.store]
    [co.prepacked.places-list.store :as places-list.store]
+   [co.prepacked.place.osm :as osm]
    [co.prepacked.place.store :as store]))
 
 (defn get-places [city-id places-list-id]
@@ -10,10 +11,12 @@
     [true places]))
 
 (defn add-place! [city-slug places-list-slug place-data]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id :as city} (city.store/find-by-slug city-slug)]
     (if-let [{places-list-id :id} (places-list.store/find-by-slug city-id places-list-slug)]
       (let [now (java-time/instant)
+            osm-data (osm/request-place-osm-data city place-data)
             place-data' (merge place-data
+                               osm-data
                                {:city_id city-id
                                 :places_list_id places-list-id
                                 :created_at now
@@ -26,11 +29,15 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn update-place! [city-slug places-list-slug place-id place-data]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id :as city} (city.store/find-by-slug city-slug)]
     (if-let [{city-places-list-id :id} (places-list.store/find-by-slug city-id places-list-slug)]
-      (if (store/find-by-id city-id city-places-list-id place-id)
+      (if-let [old-place-data (store/find-by-id city-id city-places-list-id place-id)]
         (let [now (java-time/instant)
-              place-data' (merge place-data 
+              osm-data (when (not= (:address old-place-data) (:address place-data))
+                         (osm/request-place-osm-data city place-data))
+              place-data' (merge old-place-data 
+                                 place-data 
+                                 osm-data
                                  {:updated_at now})]
           (store/update-place! place-id place-data')
           (if-let [place (store/find-by-id city-id city-places-list-id place-id)]

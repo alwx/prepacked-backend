@@ -69,8 +69,10 @@
   (try
     (log/init)
     (let [db (database/db)]
-      (if (database/db-exists?)
-        (log/info "Database exists.")
+      (if (database/db-exists?) 
+        (do
+          (log/info "Database exists.")
+          (database/check-sqlite-schema db))
         (do
           (log/info "Generating database.")
           (database/generate-db db)

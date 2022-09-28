@@ -1,12 +1,14 @@
 (ns co.prepacked.database.core
-  (:require 
-    [clojure.java.io :as io]
-    [co.prepacked.env.interface-ns :as env]))
+  (:require
+   [clojure.java.io :as io]
+   [co.prepacked.env.interface-ns :as env]
+   [co.prepacked.log.interface-ns :as log]))
 
-(defn- db-path []
-  (if (contains? env/env :database)
-    (env/env :database)
-    "database.db"))
+(defn db-path []
+  (or (env/get-var :database)
+      (do
+        (log/warn "`:database` needs to be added to `env.edn`!")
+        (System/exit 1))))
 
 (defn db
   ([path]

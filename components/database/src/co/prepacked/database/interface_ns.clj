@@ -17,3 +17,6 @@
 
 (defn drop-db [db]
   (schema/drop-db db))
+
+(defn check-sqlite-schema [db]
+  (schema/check-sqlite-schema db))

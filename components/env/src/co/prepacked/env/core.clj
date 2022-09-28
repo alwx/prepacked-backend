@@ -46,3 +46,7 @@
     (merge system-props
       system-env
       env-file)))
+
+(defn get-var [k]
+  (when (contains? env k)
+    (env k)))
