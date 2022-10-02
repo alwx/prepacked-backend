@@ -6,8 +6,8 @@
 (defn cities []
   (core/cities))
 
-(defn city-by-id [id]
-  (store/find-by-id id))
+(defn city-by-slug [slug]
+  (core/city-by-slug slug))
 
 (defn city-with-all-dependencies [slug]
   (core/city-with-all-dependencies slug))

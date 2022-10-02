@@ -78,11 +78,12 @@
       (handle 422 {:errors {:body ["Invalid request body."]}}))))
 
 (defn add-places-list [req]
-  (let [slug (-> req :params :slug)
+  (let [auth-user (-> req :auth-user)
+        slug (-> req :params :slug)
         places-list-data (-> req :params :places_list)]
     (with-valid-slug slug
       (if (s/valid? places-list-spec/add-places-list places-list-data)
-        (let [[ok? res] (places-list/add-places-list! slug places-list-data)]
+        (let [[ok? res] (places-list/add-places-list! auth-user slug places-list-data)]
           (handle (if ok? 201 404) res))
         (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
@@ -104,32 +105,54 @@
         (handle (if ok? 200 404) res)))))
 
 (defn add-place [req]
-  (let [slug (-> req :params :slug)
-        places-list-slug (-> req :params :places_list_slug)
+  (let [auth-user (-> req :auth-user)
         place-data (-> req :params :place)]
+    (if (s/valid? place-spec/add-place place-data)
+      (let [[ok? res] (place/add-place! auth-user place-data)]
+        (handle (if ok? 201 404) res))
+      (handle 422 {:errors {:body ["Invalid request body."]}}))))
+
+(defn edit-place [req]
+  (let [place-id (-> req :params :place_id)
+        place-data (-> req :params :place)]
+    (if (s/valid? place-spec/update-place place-data)
+      (let [[ok? res] (place/update-place! place-id place-data)]
+        (handle (if ok? 200 404) res))
+      (handle 422 {:errors {:body ["Invalid request body."]}}))))
+
+(defn delete-place [req]
+  (let [place-id (-> req :params :place_id)]
+    (let [[ok? res] (place/delete-place! place-id)]
+      (handle (if ok? 200 404) res))))
+
+(defn add-places-list-place [req]
+  (let [auth-user (-> req :auth-user)
+        slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)
+        data (-> req :params :data)]
     (with-valid-slug slug
-      (if (s/valid? place-spec/add-place place-data)
-        (let [[ok? res] (place/add-place! slug places-list-slug place-data)]
+      (if (s/valid? places-list-spec/add-place-to-places-list data)
+        (let [[ok? res] (places-list/add-place-to-places-list! auth-user slug places-list-slug data)]
           (handle (if ok? 201 404) res))
         (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
-(defn edit-place [req]
+(defn edit-places-list-place [req]
   (let [slug (-> req :params :slug)
         places-list-slug (-> req :params :places_list_slug)
         place-id (-> req :params :place_id)
-        place-data (-> req :params :place)]
+        data (-> req :params :data)]
     (with-valid-slug slug
-      (if (s/valid? place-spec/update-place place-data)
-        (let [[ok? res] (place/update-place! slug places-list-slug place-id place-data)]
+      (if (s/valid? places-list-spec/update-place-in-places-list data)
+        (let [[ok? res] (places-list/update-place-in-places-list! slug places-list-slug place-id data)]
           (handle (if ok? 200 404) res))
         (handle 422 {:errors {:body ["Invalid request body."]}})))))
 
-(defn delete-place [req]
+(defn delete-places-list-place [req]
   (let [slug (-> req :params :slug)
         places-list-slug (-> req :params :places_list_slug)
         place-id (-> req :params :place_id)]
     (with-valid-slug slug
-      (let [[ok? res] (place/delete-place! slug places-list-slug place-id)]
+      (let [[ok? res] (places-list/delete-place-in-places-list! slug places-list-slug place-id)]
         (handle (if ok? 200 404) res)))))
 
 (defn add-static-page [req]

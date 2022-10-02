@@ -16,3 +16,12 @@
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
                    :priority pos-int?}}))
+
+(def add-place-to-places-list
+  (ds/spec {:name :core/add-place-to-places-list
+            :spec {:place_id pos-int?
+                   :comment string?}}))
+
+(def update-place-in-places-list
+  (ds/spec {:name :core/update-place-in-places-list
+            :spec {:comment string?}}))

@@ -24,12 +24,14 @@
      [:name :text]
      [:country_code :text]]
     {:entities identity})
+   "INSERT INTO city (slug, name, country_code) VALUES ('any', 'Any', '')"
    "INSERT INTO city (slug, name, country_code) VALUES ('vienna', 'Vienna', 'at')"])
 
 (def places-list
   [(jdbc/create-table-ddl
     :places_list
     [[:id :integer :primary :key :autoincrement]
+     [:user_id :integer "references user(id)"]
      [:city_id :integer "references city(id)"]
      [:slug :text]
      [:title :text]
@@ -44,8 +46,7 @@
   [(jdbc/create-table-ddl
     :place
     [[:id :integer :primary :key :autoincrement]
-     [:city_id :integer "references city(id)"]
-     [:places_list_id :integer "references places_list(id)"]
+     [:user_id :integer "references user(id)"]
      [:address :text]
      [:title :text]
      [:description :text]
@@ -64,6 +65,17 @@
      [:osm_display_name :text]
      [:created_at :datetime]
      [:updated_at :datetime]])])
+
+(def places-list-place
+  [(jdbc/create-table-ddl
+    :places_list_place
+    [[:places_list_id :integer "references places_list(id)"]
+     [:place_id :integer "references place(id)"]
+     [:user_id :integer "references user(id)"]
+     [:comment :text]
+     [:created_at :datetime]
+     [:updated_at :datetime]])
+   "CREATE UNIQUE INDEX idx_places_list_place ON places_list_place (places_list_id, place_id)"])
 
 (def static-page
   [(jdbc/create-table-ddl
@@ -91,7 +103,7 @@
 (defn generate-db [db]
   (jdbc/db-do-commands
    db
-   (concat user city places-list place static-page navbar-item)))
+   (concat user city places-list place places-list-place static-page navbar-item)))
 
 (defn drop-db [db]
   (jdbc/db-do-commands
@@ -100,6 +112,7 @@
     (jdbc/drop-table-ddl :city)
     (jdbc/drop-table-ddl :places_list)
     (jdbc/drop-table-ddl :place)
+    (jdbc/drop-table-ddl :places_list_place)
     (jdbc/drop-table-ddl :static_page)
     (jdbc/drop-table-ddl :navbar_item)]))
 
@@ -124,11 +137,12 @@
                :where  [:= :type "table"]}
         tables (jdbc/query db (sql/format query) {:identifiers identity})
         current-schema (select-keys (into {} (map table->schema-item tables))
-                                    [:user :city :places_list :place :static_page :navbar_item])
+                                    [:user :city :places_list :place :places_list_place :static_page :navbar_item])
         valid-schema {:user (first user)
                       :city (first city)
                       :places_list (first places-list)
                       :place (first place)
+                      :places_list_place (first places-list-place)
                       :static_page (first static-page)
                       :navbar_item (first navbar-item)}]
     ()

@@ -9,6 +9,9 @@
   (let [cities (store/all-cities)]
     [true cities]))
 
+(defn city-by-slug [slug]
+  (store/find-by-slug slug))
+
 (defn- add-city-dependencies [{:keys [id] :as city}]
   (let [[_ places-lists] (places-list/get-places-lists id)
         [_ static-pages] (static-page/get-static-pages id)

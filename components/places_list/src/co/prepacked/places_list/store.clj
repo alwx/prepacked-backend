@@ -36,3 +36,30 @@
   (let [query {:delete-from :places_list
                :where [:= :id id]}]
     (jdbc/execute! (database/db) (sql/format query))))
+
+(defn find-places-list-place [places-list-id place-id]
+  (let [query {:select [:*]
+               :from   [:places_list_place]
+               :where  [:and
+                        [:= :places_list_id places-list-id]
+                        [:= :place-id place-id]]}
+        results (jdbc/query (database/db) (sql/format query))]
+    (first results)))
+
+(defn insert-places-list-place! [input]
+  (jdbc/insert! (database/db) :places_list_place input))
+
+(defn update-places-list-place! [places-list-id place-id places-list-input]
+  (let [query {:update :places_list_place 
+               :set    places-list-input
+               :where  [:and
+                        [:= :places_list_id places-list-id]
+                        [:= :place-id place-id]]}]
+    (jdbc/execute! (database/db) (sql/format query))))
+
+(defn delete-places-list-place! [places-list-id place-id]
+  (let [query {:delete-from :places_list_place
+               :where [:and
+                       [:= :places_list_id places-list-id]
+                       [:= :place-id place-id]]}]
+    (jdbc/execute! (database/db) (sql/format query))))

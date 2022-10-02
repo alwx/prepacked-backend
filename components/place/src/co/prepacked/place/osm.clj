@@ -26,15 +26,13 @@
         (log/warn "`:osm-server-user-agent` needs to be added to `env.edn`!")
         (System/exit 1))))
 
-(defn request-place-osm-data [city place]
+(defn request-place-osm-data [place]
   (let [url (str (osm-server-base-url) "/search")
-        q (str (:address place) ", " (:name city))
         params {:accept :json
                 :headers {"User-Agent" (osm-server-user-agent)}
-                :query-params {"q" q
+                :query-params {"q" (:address place)
                                "format" "json"
                                "addressdetails" "1"
-                               "countrycodes" (:country_code city)
                                "email" (osm-server-email)}
                 :as :json-kebab-keys
                 :throw-exceptions false}
