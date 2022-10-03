@@ -22,10 +22,12 @@
     [[:id :integer :primary :key :autoincrement]
      [:slug :text :unique]
      [:name :text]
-     [:country_code :text]]
+     [:country_code :text]
+     [:lat :real]
+     [:lon :real]]
     {:entities identity})
-   "INSERT INTO city (slug, name, country_code) VALUES ('any', 'Any', '')"
-   "INSERT INTO city (slug, name, country_code) VALUES ('vienna', 'Vienna', 'at')"])
+   "INSERT INTO city (slug, name, country_code) VALUES ('any', 'Any', '', 0, 0)"
+   "INSERT INTO city (slug, name, country_code) VALUES ('vienna', 'Vienna', 'at', 48.210033, 16.363449)"])
 
 (def places-list
   [(jdbc/create-table-ddl
