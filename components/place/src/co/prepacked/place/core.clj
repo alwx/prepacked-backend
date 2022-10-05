@@ -2,11 +2,16 @@
   (:require
    [java-time]
    [co.prepacked.place.osm :as osm]
-   [co.prepacked.place.store :as store]))
+   [co.prepacked.place.store :as store]
+   [co.prepacked.feature.interface-ns :as feature]))
 
-(defn get-places [city-id places-list-id]
-  (let [places (store/get-places city-id places-list-id)]
-    [true places]))
+;; TODO(alwx): can be simplified by getting all the features in one query
+(defn places-with-all-dependencies [city-id places-list-id]
+  (let [places (store/get-places city-id places-list-id)
+        places' (->> places
+                     (map (fn [{:keys [id] :as place}]
+                            (assoc place :features (store/get-place-features id)))))]
+    [true places']))
 
 (defn place-by-id [id]
   (store/find-by-id id))
@@ -46,3 +51,36 @@
       (store/delete-place! place-id)
       [true nil])
     [false {:errors {:other ["Cannot find the place in the database."]}}]))
+
+(defn add-feature-to-place! [place-id input]
+  (if (store/find-by-id place-id)
+    (if (feature/feature-by-id (:feature_id input))
+      (let [input' (merge input {:place_id place-id})]
+        (store/insert-place-feature! input')
+        (if-let [place-feature (store/find-place-feature place-id (:feature_id input'))]
+          [true place-feature]
+          [false {:errors {:other ["Cannot update the place's feature in the database."]}}]))
+      [false {:errors {:city ["There is no feature with the specified id."]}}])
+    [false {:errors {:city ["There is no place with the specified id."]}}]))
+
+(defn update-feature-in-place! [place-id feature-id input]
+  (if (store/find-by-id place-id)
+    (if (feature/feature-by-id (:feature_id input))
+      (if-let [place-feature (store/find-place-feature place-id feature-id)]
+        (let [input' (merge place-feature input {:place_id place-id})]
+          (store/update-place-feature! place-id feature-id input')
+          (if-let [place-feature (store/find-place-feature place-id (:feature_id input'))]
+            [true place-feature]
+            [false {:errors {:other ["Cannot update the place's feature in the database."]}}]))
+        [false {:errors {:other ["Cannot find the specified feature for the place."]}}])
+      [false {:errors {:city ["There is no feature with the specified id."]}}])
+    [false {:errors {:city ["There is no place with the specified id."]}}]))
+
+(defn delete-feature-in-place! [place-id feature-id]
+  (if (store/find-by-id place-id)
+    (if (store/find-place-feature place-id feature-id)
+      (do
+        (store/delete-place-feature! place-id feature-id)
+        [true nil])
+      [false {:errors {:other ["Cannot find the specified feature for the place."]}}])
+    [false {:errors {:city ["There is no place with the specified id."]}}]))

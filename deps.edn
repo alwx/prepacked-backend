@@ -3,6 +3,8 @@
                                 
                                 "components/city/src"
                                 "components/city/resources"
+                                "components/feature/src"
+                                "components/feature/resources"
                                 "components/places_list/src"
                                 "components/places_list/resources"
                                 "components/place/src"
@@ -44,6 +46,7 @@
                                ring/ring-json {:mvn/version "0.5.1"}}}
 
             :test {:extra-paths ["components/city/test"
+                                 "components/feature/test"
                                  "components/places_list/test"
                                  "components/place/test"
                                  "components/static_page/test"

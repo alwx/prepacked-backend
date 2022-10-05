@@ -16,3 +16,13 @@
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
                    :priority pos-int?}}))
+
+(def add-feature-to-place
+  (ds/spec {:name :core/add-feature-to-place
+            :spec {:feature_id spec/slug?
+                   :value string?}}))
+
+(def update-feature-in-place
+  (ds/spec {:name :core/update-feature-in-place
+            :spec {:feature_id spec/slug?
+                   :value string?}}))

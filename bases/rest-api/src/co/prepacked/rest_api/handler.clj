@@ -2,12 +2,14 @@
   (:require
    [clojure.edn :as edn]
    [clojure.spec.alpha :as s]
-   [co.prepacked.navbar-item.interface-ns :as navbar-item]
-   [co.prepacked.navbar-item.spec :as navbar-item-spec]
-   [co.prepacked.places-list.interface-ns :as places-list]
-   [co.prepacked.places-list.spec :as places-list-spec]
    [co.prepacked.place.interface-ns :as place]
    [co.prepacked.place.spec :as place-spec]
+   [co.prepacked.feature.interface-ns :as feature]
+   [co.prepacked.feature.spec :as feature-spec]
+   [co.prepacked.places-list.interface-ns :as places-list]
+   [co.prepacked.places-list.spec :as places-list-spec]
+   [co.prepacked.navbar-item.interface-ns :as navbar-item]
+   [co.prepacked.navbar-item.spec :as navbar-item-spec]
    [co.prepacked.static-page.interface-ns :as static-page]
    [co.prepacked.static-page.spec :as static-page-spec]
    [co.prepacked.city.interface-ns :as city]
@@ -77,6 +79,73 @@
         (handle (if ok? 200 404) res))
       (handle 422 {:errors {:body ["Invalid request body."]}}))))
 
+(defn add-feature [req]
+  (let [feature-data (-> req :params :feature)]
+    (if (s/valid? feature-spec/add-feature feature-data)
+      (let [[ok? res] (feature/add-feature! feature-data)]
+        (handle (if ok? 201 404) res))
+      (handle 422 {:errors {:body ["Invalid request body."]}}))))
+
+(defn edit-feature [req]
+  (let [feature-id (-> req :params :feature_id)
+        feature-data (-> req :params :feature)]
+    (with-valid-slug feature-id
+      (if (s/valid? feature-spec/update-feature feature-data)
+        (let [[ok? res] (feature/update-feature! feature-id feature-data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
+
+(defn delete-feature [req]
+  (let [feature-id (-> req :params :feature_id)
+        [ok? res] (feature/delete-feature! feature-id)]
+    (handle (if ok? 200 404) res)))
+
+(defn add-place [req]
+  (let [auth-user (-> req :auth-user)
+        place-data (-> req :params :place)]
+    (if (s/valid? place-spec/add-place place-data)
+      (let [[ok? res] (place/add-place! auth-user place-data)]
+        (handle (if ok? 201 404) res))
+      (handle 422 {:errors {:body ["Invalid request body."]}}))))
+
+(defn edit-place [req]
+  (let [place-id (-> req :params :place_id)
+        place-data (-> req :params :place)]
+    (if (s/valid? place-spec/update-place place-data)
+      (let [[ok? res] (place/update-place! place-id place-data)]
+        (handle (if ok? 200 404) res))
+      (handle 422 {:errors {:body ["Invalid request body."]}}))))
+
+(defn delete-place [req]
+  (let [place-id (-> req :params :place_id)
+        [ok? res] (place/delete-place! place-id)]
+    (handle (if ok? 200 404) res)))
+
+(defn add-place-feature [req]
+  (let [place-id (-> req :params :place_id)
+        data (-> req :params :data)]
+    (if (s/valid? place-spec/add-feature-to-place data)
+      (let [[ok? res] (place/add-feature-to-place! place-id data)]
+        (handle (if ok? 201 404) res))
+      (handle 422 {:errors {:body ["Invalid request body."]}}))))
+
+(defn edit-place-feature [req]
+  (let [place-id (-> req :params :place_id)
+        feature-id (-> req :params :feature_id)
+        data (-> req :params :data)]
+    (with-valid-slug feature-id
+      (if (s/valid? place-spec/update-feature-in-place data)
+        (let [[ok? res] (place/update-feature-in-place! place-id feature-id data)]
+          (handle (if ok? 200 404) res))
+        (handle 422 {:errors {:body ["Invalid request body."]}})))))
+
+(defn delete-place-feature [req]
+  (let [place-id (-> req :params :place_id)
+        feature-id (-> req :params :feature_id)]
+    (with-valid-slug feature-id
+      (let [[ok? res] (place/delete-feature-in-place! place-id feature-id)]
+        (handle (if ok? 200 404) res)))))
+
 (defn add-places-list [req]
   (let [auth-user (-> req :auth-user)
         slug (-> req :params :slug)
@@ -103,27 +172,6 @@
     (with-valid-slug slug
       (let [[ok? res] (places-list/delete-places-list! slug places-list-slug)]
         (handle (if ok? 200 404) res)))))
-
-(defn add-place [req]
-  (let [auth-user (-> req :auth-user)
-        place-data (-> req :params :place)]
-    (if (s/valid? place-spec/add-place place-data)
-      (let [[ok? res] (place/add-place! auth-user place-data)]
-        (handle (if ok? 201 404) res))
-      (handle 422 {:errors {:body ["Invalid request body."]}}))))
-
-(defn edit-place [req]
-  (let [place-id (-> req :params :place_id)
-        place-data (-> req :params :place)]
-    (if (s/valid? place-spec/update-place place-data)
-      (let [[ok? res] (place/update-place! place-id place-data)]
-        (handle (if ok? 200 404) res))
-      (handle 422 {:errors {:body ["Invalid request body."]}}))))
-
-(defn delete-place [req]
-  (let [place-id (-> req :params :place_id)]
-    (let [[ok? res] (place/delete-place! place-id)]
-      (handle (if ok? 200 404) res))))
 
 (defn add-places-list-place [req]
   (let [auth-user (-> req :auth-user)

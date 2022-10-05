@@ -10,7 +10,7 @@
     [true places-lists]))
 
 (defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
-  (let [[_ places] (place/get-places city_id id)]
+  (let [[_ places] (place/places-with-all-dependencies city_id id)]
     (assoc places-list
            :places places)))
 

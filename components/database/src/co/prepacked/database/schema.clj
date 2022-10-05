@@ -79,6 +79,26 @@
      [:updated_at :datetime]])
    "CREATE UNIQUE INDEX idx_places_list_place ON places_list_place (places_list_id, place_id)"])
 
+(def feature
+  [(jdbc/create-table-ddl
+    :feature
+    [[:id :text :primary :key]
+     [:title :text]
+     [:icon :text]])
+   "INSERT INTO feature (id, title, icon) VALUES ('wifi', 'WiFi', 'wifi')"
+   "INSERT INTO feature (id, title, icon) VALUES ('laptop-policy', 'Laptop Policy', 'laptop')"
+   "INSERT INTO feature (id, title, icon) VALUES ('price', 'Price', 'euro-sign')"
+   "INSERT INTO feature (id, title, icon) VALUES ('location', 'Location', 'map')"
+   "INSERT INTO feature (id, title, icon) VALUES ('crowd', 'Crowd', 'users')"])
+
+(def place-feature
+  [(jdbc/create-table-ddl
+    :place_feature
+    [[:place_id :integer "references place(id)"]
+     [:feature_id :text "references feature(id)"]
+     [:value :text]])
+   "CREATE UNIQUE INDEX idx_place_feature ON place_feature (place_id, feature_id)"])
+
 (def static-page
   [(jdbc/create-table-ddl
     :static_page
@@ -105,7 +125,7 @@
 (defn generate-db [db]
   (jdbc/db-do-commands
    db
-   (concat user city places-list place places-list-place static-page navbar-item)))
+   (concat user city places-list place places-list-place feature place-feature static-page navbar-item)))
 
 (defn drop-db [db]
   (jdbc/db-do-commands
@@ -115,6 +135,8 @@
     (jdbc/drop-table-ddl :places_list)
     (jdbc/drop-table-ddl :place)
     (jdbc/drop-table-ddl :places_list_place)
+    (jdbc/drop-table-ddl :feature)
+    (jdbc/drop-table-ddl :place_feature)
     (jdbc/drop-table-ddl :static_page)
     (jdbc/drop-table-ddl :navbar_item)]))
 
@@ -139,15 +161,24 @@
                :where  [:= :type "table"]}
         tables (jdbc/query db (sql/format query) {:identifiers identity})
         current-schema (select-keys (into {} (map table->schema-item tables))
-                                    [:user :city :places_list :place :places_list_place :static_page :navbar_item])
+                                    [:user 
+                                     :city 
+                                     :places_list 
+                                     :place 
+                                     :places_list_place 
+                                     :feature 
+                                     :place_feature 
+                                     :static_page 
+                                     :navbar_item])
         valid-schema {:user (first user)
                       :city (first city)
                       :places_list (first places-list)
                       :place (first place)
                       :places_list_place (first places-list-place)
+                      :feature (first feature)
+                      :place_feature (first place-feature)
                       :static_page (first static-page)
-                      :navbar_item (first navbar-item)}]
-    ()
+                      :navbar_item (first navbar-item)}] 
     (if (= valid-schema current-schema)
       true
       (do

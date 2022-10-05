@@ -43,3 +43,38 @@
   (let [query {:delete-from :place
                :where [:= :id id]}]
     (jdbc/execute! (database/db) (sql/format query))))
+
+(defn get-place-features [place-id]
+  (let [query {:select [:pf.* :f.title :f.icon]
+               :from   [[:place_feature :pf]]
+               :join   [[:feature :f] [:= :f.id :pf.feature_id]]
+               :where  [:= :pf.place_id place-id]}
+        results (jdbc/query (database/db) (sql/format query))]
+    results))
+
+(defn find-place-feature [place-id feature-id]
+  (let [query {:select [:*]
+               :from   [:place_feature]
+               :where  [:and
+                        [:= :place_id place-id]
+                        [:= :feature_id feature-id]]}
+        results (jdbc/query (database/db) (sql/format query))]
+    (first results)))
+
+(defn insert-place-feature! [input]
+  (jdbc/insert! (database/db) :place_feature input))
+
+(defn update-place-feature! [place-id feature-id place-feature-input]
+  (let [query {:update :place_feature
+               :set    place-feature-input
+               :where  [:and
+                        [:= :place_id place-id]
+                        [:= :feature_id feature-id]]}]
+    (jdbc/execute! (database/db) (sql/format query))))
+
+(defn delete-place-feature! [place-id feature-id]
+  (let [query {:delete-from :place_feature
+               :where [:and
+                       [:= :place_id place-id]
+                       [:= :feature_id feature-id]]}]
+    (jdbc/execute! (database/db) (sql/format query))))

@@ -6,8 +6,7 @@
    [co.prepacked.city.store :as store]))
 
 (defn cities []
-  (let [cities (store/all-cities)]
-    [true cities]))
+  [true (store/all-cities)])
 
 (defn city-by-slug [slug]
   (store/find-by-slug slug))
