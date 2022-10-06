@@ -8,14 +8,14 @@
             :spec {:address spec/non-empty-string?
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
-                   :priority pos-int?}}))
+                   :priority int?}}))
 
 (def update-place
   (ds/spec {:name :core/update-place
             :spec {:address spec/non-empty-string?
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
-                   :priority pos-int?}}))
+                   :priority int?}}))
 
 (def add-feature-to-place
   (ds/spec {:name :core/add-feature-to-place

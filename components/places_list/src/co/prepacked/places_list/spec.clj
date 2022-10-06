@@ -8,14 +8,14 @@
             :spec {:slug spec/slug?
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
-                   :priority pos-int?}}))
+                   :priority int?}}))
 
 (def update-places-list
   (ds/spec {:name :core/update-places-list
             :spec {:slug spec/slug?
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
-                   :priority pos-int?}}))
+                   :priority int?}}))
 
 (def add-place-to-places-list
   (ds/spec {:name :core/add-place-to-places-list

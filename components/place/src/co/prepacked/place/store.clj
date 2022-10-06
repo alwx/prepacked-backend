@@ -11,14 +11,15 @@
                       [:places_list :pl] [:= :plp.places_list_id :pl.id]]
                :where [:and
                        [:= :pl.city_id city-id]
-                       [:= :pl.id places-list-id]]}
+                       [:= :pl.id places-list-id]]
+               :order-by [[:p.priority :desc]]}
         results (jdbc/query (database/db) (sql/format query) {:identifiers identity})]
     results))
 
 (defn find-by [key value]
   (let [query {:select [:*]
-               :from   [:place]
-               :where  [:= key value]}
+               :from [:place]
+               :where [:= key value]}
         results (jdbc/query (database/db) (sql/format query))]
     (first results)))
 
@@ -46,18 +47,19 @@
 
 (defn get-place-features [place-id]
   (let [query {:select [:pf.* :f.title :f.icon]
-               :from   [[:place_feature :pf]]
-               :join   [[:feature :f] [:= :f.id :pf.feature_id]]
-               :where  [:= :pf.place_id place-id]}
+               :from [[:place_feature :pf]]
+               :join [[:feature :f] [:= :f.id :pf.feature_id]]
+               :where [:= :pf.place_id place-id]
+               :order-by [[:f.priority :desc]]}
         results (jdbc/query (database/db) (sql/format query))]
     results))
 
 (defn find-place-feature [place-id feature-id]
   (let [query {:select [:*]
-               :from   [:place_feature]
-               :where  [:and
-                        [:= :place_id place-id]
-                        [:= :feature_id feature-id]]}
+               :from [:place_feature]
+               :where [:and
+                       [:= :place_id place-id]
+                       [:= :feature_id feature-id]]}
         results (jdbc/query (database/db) (sql/format query))]
     (first results)))
 
@@ -66,10 +68,10 @@
 
 (defn update-place-feature! [place-id feature-id place-feature-input]
   (let [query {:update :place_feature
-               :set    place-feature-input
-               :where  [:and
-                        [:= :place_id place-id]
-                        [:= :feature_id feature-id]]}]
+               :set place-feature-input
+               :where [:and
+                       [:= :place_id place-id]
+                       [:= :feature_id feature-id]]}]
     (jdbc/execute! (database/db) (sql/format query))))
 
 (defn delete-place-feature! [place-id feature-id]

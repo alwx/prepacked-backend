@@ -1,22 +1,23 @@
 (ns co.prepacked.places-list.store
-  (:require 
-    [clojure.java.jdbc :as jdbc]
-    [co.prepacked.database.interface-ns :as database]
-    [honey.sql :as sql]))
+  (:require
+   [clojure.java.jdbc :as jdbc]
+   [co.prepacked.database.interface-ns :as database]
+   [honey.sql :as sql]))
 
 (defn places-lists [city-id]
   (let [query {:select [:*]
-               :from   [:places_list]
-               :where  [:= :city_id city-id]}
+               :from [:places_list]
+               :where [:= :city_id city-id]
+               :order-by [[:priority :desc]]}
         results (jdbc/query (database/db) (sql/format query) {:identifiers identity})]
     results))
 
 (defn find-by [city-id key value]
   (let [query {:select [:*]
-               :from   [:places_list]
-               :where  [:and 
-                        [:= key value]
-                        [:= :city_id city-id]]}
+               :from [:places_list]
+               :where [:and
+                       [:= key value]
+                       [:= :city_id city-id]]}
         results (jdbc/query (database/db) (sql/format query))]
     (first results)))
 
@@ -50,7 +51,7 @@
   (jdbc/insert! (database/db) :places_list_place input))
 
 (defn update-places-list-place! [places-list-id place-id places-list-input]
-  (let [query {:update :places_list_place 
+  (let [query {:update :places_list_place
                :set    places-list-input
                :where  [:and
                         [:= :places_list_id places-list-id]
