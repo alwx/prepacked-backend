@@ -4,7 +4,7 @@
    [co.prepacked.database.interface-ns :as database]
    [honey.sql :as sql]))
 
-(defn get-places [city-id places-list-id]
+(defn places [city-id places-list-id]
   (let [query {:select [:p.* :plp.comment]
                :from [[:place :p]]
                :join [[:places_list_place :plp] [:= :p.id :plp.place_id]

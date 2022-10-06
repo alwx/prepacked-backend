@@ -1,7 +1,6 @@
 (ns co.prepacked.user.interface-ns
   (:require 
-    [co.prepacked.user.core :as core]
-    [co.prepacked.user.store :as store]))
+    [co.prepacked.user.core :as core]))
 
 (defn login! [login-input]
   (core/login! login-input))
@@ -14,6 +13,3 @@
 
 (defn update-user! [auth-user user-input]
   (core/update-user! auth-user user-input))
-
-(defn find-by-username-or-id [username-or-id]
-  (store/find-by-username-or-id username-or-id))

@@ -84,12 +84,13 @@
     :feature
     [[:id :text :primary :key]
      [:title :text]
-     [:icon :text]])
-   "INSERT INTO feature (id, title, icon) VALUES ('wifi', 'WiFi', 'wifi')"
-   "INSERT INTO feature (id, title, icon) VALUES ('laptop-policy', 'Laptop Policy', 'laptop')"
-   "INSERT INTO feature (id, title, icon) VALUES ('price', 'Price', 'euro-sign')"
-   "INSERT INTO feature (id, title, icon) VALUES ('location', 'Location', 'map')"
-   "INSERT INTO feature (id, title, icon) VALUES ('crowd', 'Crowd', 'users')"])
+     [:icon :text]
+     [:priority :integer "default 0"]])
+   "INSERT INTO feature (id, title, icon) VALUES ('location', 'Location', 'map', 100)"
+   "INSERT INTO feature (id, title, icon) VALUES ('price', 'Price', 'euro-sign', 99)"
+   "INSERT INTO feature (id, title, icon) VALUES ('wifi', 'WiFi', 'wifi', 98)"
+   "INSERT INTO feature (id, title, icon) VALUES ('laptop-policy', 'Laptop Policy', 97, 'laptop')"
+   "INSERT INTO feature (id, title, icon) VALUES ('crowd', 'Crowd', 'users', 96)"])
 
 (def place-feature
   [(jdbc/create-table-ddl

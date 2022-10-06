@@ -5,9 +5,8 @@
    [co.prepacked.places-list.store :as store]
    [co.prepacked.city.store :as city.store]))
 
-(defn get-places-lists [city-id]
-  (let [places-lists (store/get-places-lists city-id)]
-    [true places-lists]))
+(defn places-lists [city-id]
+  [true (store/places-lists city-id)])
 
 (defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
   (let [[_ places] (place/places-with-all-dependencies city_id id)]

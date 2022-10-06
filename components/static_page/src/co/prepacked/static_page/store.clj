@@ -4,7 +4,7 @@
     [co.prepacked.database.interface-ns :as database]
     [honey.sql :as sql]))
 
-(defn get-static-pages [city-id]
+(defn static-pages [city-id]
   (let [query {:select [:*]
                :from   [:static_page]
                :where  [:= :city_id city-id]}

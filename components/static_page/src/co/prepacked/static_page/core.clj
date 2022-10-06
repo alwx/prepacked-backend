@@ -4,9 +4,8 @@
    [co.prepacked.static-page.store :as store]
    [co.prepacked.city.store :as city.store]))
 
-(defn get-static-pages [city-id]
-  (let [static-pages (store/get-static-pages city-id)]
-    [true static-pages]))
+(defn static-pages [city-id]
+  [true (store/static-pages city-id)])
 
 (defn add-static-page! [city-slug {:keys [slug] :as static-page-data}]
   (if-let [{city-id :id} (city.store/find-by-slug city-slug)]

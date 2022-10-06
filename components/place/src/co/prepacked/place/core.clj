@@ -7,7 +7,7 @@
 
 ;; TODO(alwx): can be simplified by getting all the features in one query
 (defn places-with-all-dependencies [city-id places-list-id]
-  (let [places (store/get-places city-id places-list-id)
+  (let [places (store/places city-id places-list-id)
         places' (->> places
                      (map (fn [{:keys [id] :as place}]
                             (assoc place :features (store/get-place-features id)))))]

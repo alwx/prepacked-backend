@@ -17,7 +17,7 @@
   (GET     "/api/health" [] handler/health)
   (GET     "/api/cities" [] handler/cities)
   (GET     "/api/cities/:slug" [] handler/city-with-all-dependencies)
-  (GET     "/api/cities/:slug/places_lists/:places_list_slug" [] handler/places-list-with-all-dependencies)
+  (GET     "/api/cities/:slug/places-lists/:places_list_slug" [] handler/places-list-with-all-dependencies)
   (POST    "/api/users/login" [] handler/login)
   (POST    "/api/users" [] handler/register))
 

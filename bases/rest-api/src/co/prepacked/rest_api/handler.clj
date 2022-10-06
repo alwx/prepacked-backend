@@ -48,7 +48,7 @@
   (handle 404 {:errors {:other ["Route not found."]}}))
 
 (defn cities [_]
-  (let [[ok? res] (city/cities)]
+  (let [[ok? res] (city/all-cities)]
     (handle (if ok? 200 404) res)))
 
 (defn city-with-all-dependencies [req]

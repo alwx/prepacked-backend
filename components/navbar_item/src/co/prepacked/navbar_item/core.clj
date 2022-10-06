@@ -3,8 +3,8 @@
    [co.prepacked.navbar-item.store :as store]
    [co.prepacked.city.store :as city.store]))
 
-(defn get-navbar-items [city-id]
-  (let [navbar-items (store/get-navbar-items city-id)]
+(defn navbar-items [city-id]
+  (let [navbar-items (store/navbar-items city-id)]
     [true navbar-items]))
 
 (defn add-navbar-item! [city-slug navbar-item-data]

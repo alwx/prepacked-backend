@@ -3,7 +3,7 @@
    [co.prepacked.places-list.core :as core]))
 
 (defn get-places-lists [city-id]
-  (core/get-places-lists city-id))
+  (core/places-lists city-id))
 
 (defn places-list-with-all-dependencies [city-slug places-list-slug]
   (core/places-list-with-all-dependencies city-slug places-list-slug))

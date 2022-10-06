@@ -2,8 +2,8 @@
   (:require 
     [co.prepacked.navbar-item.core :as core]))
 
-(defn get-navbar-items [city-id]
-  (core/get-navbar-items city-id))
+(defn navbar-items [city-id]
+  (core/navbar-items city-id))
 
 (defn add-navbar-item! [city-slug navbar-item-input]
   (core/add-navbar-item! city-slug navbar-item-input))
