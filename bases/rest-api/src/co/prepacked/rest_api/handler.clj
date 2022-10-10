@@ -262,7 +262,7 @@
         (handle (if ok? 200 404) res)))))
 
 (defn post-image [req]
-  (let [{:keys [content-type tempfile size]} (-> req :params :image_file)]
+  (let [{:keys [content-type tempfile]} (-> req :params :image_file)]
     (if-let [ext (file/content-type->supported-ext content-type)]
       (let [uuid (.toString (java.util.UUID/randomUUID))
             filename (format "%s.%s" uuid ext)]
