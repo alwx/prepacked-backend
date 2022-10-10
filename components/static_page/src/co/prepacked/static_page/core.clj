@@ -1,14 +1,13 @@
 (ns co.prepacked.static-page.core
-  (:require
-   [java-time]
-   [co.prepacked.static-page.store :as store]
-   [co.prepacked.city.store :as city.store]))
+  (:require [java-time]
+            [co.prepacked.city.interface-ns :as city]
+            [co.prepacked.static-page.store :as store]))
 
 (defn static-pages [city-id]
-  [true (store/static-pages city-id)])
+  (store/static-pages city-id))
 
 (defn add-static-page! [city-slug {:keys [slug] :as static-page-data}]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [_ (store/find-by-slug city-id slug)]
       [false {:errors {:slug ["A static page with the provided slug already exists."]}}]
       (let [now (java-time/instant)
@@ -23,7 +22,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn update-static-page! [city-slug static-page-slug static-page-data]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [{city-static-page-id :id} (store/find-by-slug city-id static-page-slug)]
       (let [now (java-time/instant)
             static-page-data' (merge static-page-data
@@ -37,7 +36,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn delete-static-page! [city-slug static-page-slug]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [{city-static-page-id :id} (store/find-by-slug city-id static-page-slug)]
       (do
         (store/delete-static-page! city-static-page-id)

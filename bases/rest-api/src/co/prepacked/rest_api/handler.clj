@@ -55,8 +55,13 @@
 (defn city-with-all-dependencies [req]
   (let [slug (-> req :params :slug)]
     (with-valid-slug slug
-      (let [[ok? res] (city/city-with-all-dependencies slug)]
-        (handle (if ok? 200 404) res)))))
+      (if-let [{:keys [id] :as city} (city/city-by-slug slug)]
+        (let [city' (assoc city 
+                           :places_lists (places-list/get-places-lists id)
+                           :static_pages (static-page/get-static-pages id)
+                           :navbar_items (navbar-item/navbar-items id))]
+          (handle 200 {:city city'}))
+        (handle 404 {:errors {:city ["Cannot find the city."]}})))))
 
 (defn places-list-with-all-dependencies [req]
   (let [slug (-> req :params :slug)

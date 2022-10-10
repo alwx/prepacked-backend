@@ -1,14 +1,13 @@
 (ns co.prepacked.navbar-item.core
   (:require
    [co.prepacked.navbar-item.store :as store]
-   [co.prepacked.city.store :as city.store]))
+   [co.prepacked.city.interface-ns :as city]))
 
 (defn navbar-items [city-id]
-  (let [navbar-items (store/navbar-items city-id)]
-    [true navbar-items]))
+  (store/navbar-items city-id))
 
 (defn add-navbar-item! [city-slug navbar-item-data]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (let [navbar-item-data' (assoc navbar-item-data :city_id city-id)
           navbar-item-id (store/insert-navbar-item! navbar-item-data')]
       (if-let [navbar-item (store/find-by-id city-id navbar-item-id)]
@@ -17,7 +16,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn update-navbar-item! [city-slug navbar-item-id navbar-item-data]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if (store/find-by-id city-id navbar-item-id)
       (do
         (store/update-navbar-item! navbar-item-id navbar-item-data)
@@ -28,7 +27,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn delete-navbar-item! [city-slug navbar-item-id]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if (store/find-by-id city-id navbar-item-id)
       (do
         (store/delete-navbar-item! navbar-item-id)

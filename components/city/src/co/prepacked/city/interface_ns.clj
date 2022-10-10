@@ -5,5 +5,5 @@
 (defn all-cities []
   (core/all-cities))
 
-(defn city-with-all-dependencies [slug]
-  (core/city-with-all-dependencies slug))
+(defn city-by-slug [slug]
+  (core/city-by-slug slug))

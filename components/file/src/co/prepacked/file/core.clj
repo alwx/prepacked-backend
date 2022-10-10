@@ -47,8 +47,8 @@
   (let [{:keys [bucket] :as config} (s3-config)
         cred (s3-credentials config)
         stream (java.io.ByteArrayInputStream. bytes)]
-    #_(when-not (bucket-exists? cred bucket)
-        (create-bucket cred bucket))
+    (when-not (bucket-exists? cred bucket)
+      (create-bucket cred bucket))
     (s3/put-object
      cred
      :bucket-name bucket

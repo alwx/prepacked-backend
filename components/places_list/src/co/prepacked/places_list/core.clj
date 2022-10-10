@@ -1,12 +1,11 @@
 (ns co.prepacked.places-list.core
-  (:require
-   [java-time]
-   [co.prepacked.place.interface-ns :as place]
-   [co.prepacked.places-list.store :as store]
-   [co.prepacked.city.store :as city.store]))
+  (:require [java-time]
+            [co.prepacked.city.interface-ns :as city]
+            [co.prepacked.place.interface-ns :as place]
+            [co.prepacked.places-list.store :as store]))
 
 (defn places-lists [city-id]
-  [true (store/places-lists city-id)])
+  (store/places-lists city-id))
 
 (defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
   (let [[_ places] (place/places-with-all-dependencies city_id id)]
@@ -14,14 +13,14 @@
            :places places)))
 
 (defn places-list-with-all-dependencies [city-slug places-list-slug]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [places-list (store/find-by-slug city-id places-list-slug)]
       [true {:places_list (add-places-list-dependencies places-list)}]
       [false {:errors {:places_list ["Cannot find the places list."]}}])
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn add-places-list! [auth-user city-slug {:keys [slug] :as places-list-data}]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [_ (store/find-by-slug city-id slug)]
       [false {:errors {:slug ["A places list with the provided slug already exists."]}}]
       (let [now (java-time/instant)
@@ -37,7 +36,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn update-places-list! [city-slug places-list-slug places-list-data]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [{city-places-list-id :id :as old-places-list-data} (store/find-by-slug city-id places-list-slug)]
       (let [now (java-time/instant)
             places-list-data' (merge old-places-list-data
@@ -51,7 +50,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn delete-places-list! [city-slug places-list-slug]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [{city-places-list-id :id} (store/find-by-slug city-id places-list-slug)]
       (do
         (store/delete-places-list! city-places-list-id)
@@ -60,7 +59,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn add-place-to-places-list! [auth-user city-slug places-list-slug input]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [{city-places-list-id :id} (store/find-by-slug city-id places-list-slug)]
       (if (place/place-by-id (:place_id input))
         (let [now (java-time/instant)
@@ -79,7 +78,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn update-place-in-places-list! [city-slug places-list-slug place-id input]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [{city-places-list-id :id} (store/find-by-slug city-id places-list-slug)]
       (if-let [places-list-place (store/find-places-list-place city-places-list-id place-id)]
         (let [now (java-time/instant)
@@ -95,7 +94,7 @@
     [false {:errors {:city ["There is no city with the specified slug."]}}]))
 
 (defn delete-place-in-places-list! [city-slug places-list-slug place-id]
-  (if-let [{city-id :id} (city.store/find-by-slug city-slug)]
+  (if-let [{city-id :id} (city/city-by-slug city-slug)]
     (if-let [{city-places-list-id :id} (store/find-by-slug city-id places-list-slug)]
       (if (store/find-places-list-place city-places-list-id place-id)
         (do
