@@ -1,6 +1,5 @@
 (ns co.prepacked.feature.core
   (:require
-   [java-time]
    [co.prepacked.feature.store :as store]))
 
 (defn feature-by-id [id]

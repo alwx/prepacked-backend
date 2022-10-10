@@ -2,6 +2,7 @@
         poly/database {:local/root "../../components/database"}
         poly/env {:local/root "../../components/env"}
         poly/feature {:local/root "../../components/feature"}
+        poly/file {:local/root "../../components/file"}
         poly/log {:local/root "../../components/log"}
         poly/navbar-item {:local/root "../../components/navbar_item"}
         poly/places-list {:local/root "../../components/places_list"}

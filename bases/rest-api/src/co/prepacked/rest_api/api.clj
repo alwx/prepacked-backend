@@ -44,6 +44,8 @@
   (POST    "/api/cities/:slug/navbar-items" [] handler/add-navbar-item)
   (PUT     "/api/cities/:slug/navbar-items/:navbar_item_id" [] handler/edit-navbar-item)
   (DELETE  "/api/cities/:slug/navbar-items/:navbar_item_id" [] handler/delete-navbar-item)
+  
+  (POST    "/api/files/images" [] handler/post-image)
 
   (GET     "/api/user" [] handler/current-user)
   (PUT     "/api/user" [] handler/update-user))

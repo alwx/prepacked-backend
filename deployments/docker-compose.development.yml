@@ -1,0 +1,43 @@
+version: '3.3'
+
+volumes:
+  prepacked_minio: {}
+
+networks:
+  prepacked_network:
+
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    networks:
+     - prepacked_network
+    ports:
+     - "5433:5432"
+    environment:
+      POSTGRES_DB: prepacked-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: prepacked-password
+
+  prepacked_minio:
+    image: minio/minio
+    hostname: minio
+    networks:
+     - prepacked_network
+    volumes:
+     - "prepacked_minio:/data"
+    ports:
+     - "9001:9000"
+    environment:
+      MINIO_ACCESS_KEY: minio_access_key
+      MINIO_SECRET_KEY: minio_secret_key
+    command: server /data
+
+  minio-nginx:
+    build: nginx/development/.
+    networks:
+     - prepacked_network
+    volumes:
+     - "prepacked_minio:/data"
+    ports:
+     - "3002:80"

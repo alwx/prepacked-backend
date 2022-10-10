@@ -5,14 +5,14 @@
    [honey.sql :as sql]))
 
 (defn places [city-id places-list-id]
-  (let [query {:select [:p.* :plp.comment]
-               :from [[:place :p]]
-               :join [[:places_list_place :plp] [:= :p.id :plp.place_id]
-                      [:places_list :pl] [:= :plp.places_list_id :pl.id]]
+  (let [query {:select [:place.* :places_list_place.comment]
+               :from [[:place]]
+               :join [[:places_list_place] [:= :place.id :places_list_place.place_id]
+                      [:places_list] [:= :places_list_place.places_list_id :places_list.id]]
                :where [:and
-                       [:= :pl.city_id city-id]
-                       [:= :pl.id places-list-id]]
-               :order-by [[:p.priority :desc]]}
+                       [:= :places_list.city_id city-id]
+                       [:= :places_list.id places-list-id]]
+               :order-by [[:place.priority :desc]]}
         results (jdbc/query (database/db) (sql/format query) {:identifiers identity})]
     results))
 
@@ -45,12 +45,14 @@
                :where [:= :id id]}]
     (jdbc/execute! (database/db) (sql/format query))))
 
-(defn get-place-features [place-id]
-  (let [query {:select [:pf.* :f.title :f.icon]
-               :from [[:place_feature :pf]]
-               :join [[:feature :f] [:= :f.id :pf.feature_id]]
-               :where [:= :pf.place_id place-id]
-               :order-by [[:f.priority :desc]]}
+(defn places-list-features [places-list-id]
+  (let [query {:select [:place_feature.* :feature.title :feature.icon]
+               :from [[:place_feature]]
+               :join [[:feature] [:= :feature.id :place_feature.feature_id]
+                      [:place] [:= :place.id :place_feature.place_id]
+                      [:places_list_place] [:= :places_list_place.place_id :place.id]]
+               :where [:= :places_list_place.places_list_id places-list-id]
+               :order-by [[:feature.priority :desc]]}
         results (jdbc/query (database/db) (sql/format query))]
     results))
 

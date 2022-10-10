@@ -1,11 +1,10 @@
 (ns co.prepacked.user.core
-  (:require
-   [buddy.sign.jwt]
-   [crypto.password.pbkdf2 :as crypto]
-   [java-time]
-   [co.prepacked.env.interface-ns :as env]
-   [co.prepacked.log.interface-ns :as log]
-   [co.prepacked.user.store :as store]))
+  (:require [buddy.sign.jwt]
+            [crypto.password.pbkdf2 :as crypto]
+            [java-time]
+            [co.prepacked.env.interface-ns :as env]
+            [co.prepacked.log.interface-ns :as log]
+            [co.prepacked.user.store :as store]))
 
 (defn token-secret []
   (or (env/get-var :token-secret)

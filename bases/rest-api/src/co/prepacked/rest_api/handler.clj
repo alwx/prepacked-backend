@@ -6,6 +6,7 @@
    [co.prepacked.place.spec :as place-spec]
    [co.prepacked.feature.interface-ns :as feature]
    [co.prepacked.feature.spec :as feature-spec]
+   [co.prepacked.file.interface-ns :as file]
    [co.prepacked.places-list.interface-ns :as places-list]
    [co.prepacked.places-list.spec :as places-list-spec]
    [co.prepacked.navbar-item.interface-ns :as navbar-item]
@@ -254,6 +255,21 @@
     (with-valid-slug slug
       (let [[ok? res] (navbar-item/delete-navbar-item! slug navbar-item-id)]
         (handle (if ok? 200 404) res)))))
+
+(defn post-image [req]
+  (let [{:keys [content-type tempfile size]} (-> req :params :image_file)]
+    (if-let [ext (file/content-type->supported-ext content-type)]
+      (let [uuid (.toString (java.util.UUID/randomUUID))
+            filename (format "%s.%s" uuid ext)]
+        (try
+          (-> (file/resize-image tempfile ext 1000)
+              (file/save-to-s3 (format "images/%s" filename))) 
+          (-> (file/resize-image tempfile ext 300)
+              (file/save-to-s3 (format "thumbnail_images/%s" filename)))
+          (handle 201 {:filename filename})
+          (catch Exception e 
+            (handle 422 {:errors {:image (.toString e)}}))))
+      (handle 422 {:errors {:file ["Invalid file type."]}}))))
 
 (defn current-user [req]
   (let [auth-user (-> req :auth-user)]

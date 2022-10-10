@@ -5,12 +5,13 @@
    [co.prepacked.place.store :as store]
    [co.prepacked.feature.interface-ns :as feature]))
 
-;; TODO(alwx): can be simplified by getting all the features in one query
 (defn places-with-all-dependencies [city-id places-list-id]
   (let [places (store/places city-id places-list-id)
-        places' (->> places
-                     (map (fn [{:keys [id] :as place}]
-                            (assoc place :features (store/get-place-features id)))))]
+        features (->> (store/places-list-features places-list-id)
+                      (group-by :place_id))
+        places' (->> places 
+                     (mapv (fn [{:keys [id] :as place}] 
+                             (assoc place :features (get features id [])))))]
     [true places']))
 
 (defn place-by-id [id]

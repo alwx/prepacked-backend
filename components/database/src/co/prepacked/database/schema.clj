@@ -29,20 +29,29 @@
    "INSERT INTO city (slug, name, country_code) VALUES ('any', 'Any', '', 0, 0)"
    "INSERT INTO city (slug, name, country_code) VALUES ('vienna', 'Vienna', 'at', 48.210033, 16.363449)"])
 
-(def places-list
+(def feature
   [(jdbc/create-table-ddl
-    :places_list
+    :feature
+    [[:id :text :primary :key]
+     [:title :text]
+     [:icon :text]
+     [:priority :integer "default 0"]])
+   "INSERT INTO feature (id, title, icon) VALUES ('location', 'Location', 'map', 100)"
+   "INSERT INTO feature (id, title, icon) VALUES ('price', 'Price', 'euro-sign', 99)"
+   "INSERT INTO feature (id, title, icon) VALUES ('wifi', 'WiFi', 'wifi', 98)"
+   "INSERT INTO feature (id, title, icon) VALUES ('laptop-policy', 'Laptop Policy', 97, 'laptop')"
+   "INSERT INTO feature (id, title, icon) VALUES ('crowd', 'Crowd', 'users', 96)"])
+
+(def file
+  [(jdbc/create-table-ddl
+    :file
     [[:id :integer :primary :key :autoincrement]
      [:user_id :integer "references user(id)"]
-     [:city_id :integer "references city(id)"]
-     [:slug :text]
-     [:title :text]
-     [:description :text]
-     [:priority :integer "default 0"]
-     [:created_at :datetime]
-     [:updated_at :datetime]]
-    {:entities identity})
-   "CREATE UNIQUE INDEX idx_places_list_city_id_slug ON places_list (city_id, slug)"])
+     [:type :text]
+     [:server_url :text]
+     [:link :text]
+     [:created_at :datetime]]
+    {:entities identity})])
 
 (def place
   [(jdbc/create-table-ddl
@@ -68,6 +77,37 @@
      [:created_at :datetime]
      [:updated_at :datetime]])])
 
+(def place-feature
+  [(jdbc/create-table-ddl
+    :place_feature
+    [[:place_id :integer "references place(id)"]
+     [:feature_id :text "references feature(id)"]
+     [:value :text]])
+   "CREATE UNIQUE INDEX idx_place_feature ON place_feature (place_id, feature_id)"])
+
+(def place-file
+  [(jdbc/create-table-ddl
+    :place_file
+    [[:place_id :integer "references place(id)"]
+     [:file_id :text "references file(id)"]
+     [:priority :integer "default 0"]])
+   "CREATE UNIQUE INDEX idx_place_file ON place_file (place_id, file_id)"])
+
+(def places-list
+  [(jdbc/create-table-ddl
+    :places_list
+    [[:id :integer :primary :key :autoincrement]
+     [:user_id :integer "references user(id)"]
+     [:city_id :integer "references city(id)"]
+     [:slug :text]
+     [:title :text]
+     [:description :text]
+     [:priority :integer "default 0"]
+     [:created_at :datetime]
+     [:updated_at :datetime]]
+    {:entities identity})
+   "CREATE UNIQUE INDEX idx_places_list_city_id_slug ON places_list (city_id, slug)"])
+
 (def places-list-place
   [(jdbc/create-table-ddl
     :places_list_place
@@ -78,27 +118,6 @@
      [:created_at :datetime]
      [:updated_at :datetime]])
    "CREATE UNIQUE INDEX idx_places_list_place ON places_list_place (places_list_id, place_id)"])
-
-(def feature
-  [(jdbc/create-table-ddl
-    :feature
-    [[:id :text :primary :key]
-     [:title :text]
-     [:icon :text]
-     [:priority :integer "default 0"]])
-   "INSERT INTO feature (id, title, icon) VALUES ('location', 'Location', 'map', 100)"
-   "INSERT INTO feature (id, title, icon) VALUES ('price', 'Price', 'euro-sign', 99)"
-   "INSERT INTO feature (id, title, icon) VALUES ('wifi', 'WiFi', 'wifi', 98)"
-   "INSERT INTO feature (id, title, icon) VALUES ('laptop-policy', 'Laptop Policy', 97, 'laptop')"
-   "INSERT INTO feature (id, title, icon) VALUES ('crowd', 'Crowd', 'users', 96)"])
-
-(def place-feature
-  [(jdbc/create-table-ddl
-    :place_feature
-    [[:place_id :integer "references place(id)"]
-     [:feature_id :text "references feature(id)"]
-     [:value :text]])
-   "CREATE UNIQUE INDEX idx_place_feature ON place_feature (place_id, feature_id)"])
 
 (def static-page
   [(jdbc/create-table-ddl
@@ -126,18 +145,29 @@
 (defn generate-db [db]
   (jdbc/db-do-commands
    db
-   (concat user city places-list place places-list-place feature place-feature static-page navbar-item)))
+   (concat user
+           city
+           feature
+           file
+           place
+           place-feature
+           place-file
+           places-list
+           places-list-place
+           static-page
+           navbar-item)))
 
 (defn drop-db [db]
   (jdbc/db-do-commands
    db
    [(jdbc/drop-table-ddl :user)
     (jdbc/drop-table-ddl :city)
-    (jdbc/drop-table-ddl :places_list)
-    (jdbc/drop-table-ddl :place)
-    (jdbc/drop-table-ddl :places_list_place)
     (jdbc/drop-table-ddl :feature)
+    (jdbc/drop-table-ddl :file)
+    (jdbc/drop-table-ddl :place)
     (jdbc/drop-table-ddl :place_feature)
+    (jdbc/drop-table-ddl :places_list)
+    (jdbc/drop-table-ddl :places_list_place)
     (jdbc/drop-table-ddl :static_page)
     (jdbc/drop-table-ddl :navbar_item)]))
 
@@ -162,24 +192,28 @@
                :where  [:= :type "table"]}
         tables (jdbc/query db (sql/format query) {:identifiers identity})
         current-schema (select-keys (into {} (map table->schema-item tables))
-                                    [:user 
-                                     :city 
-                                     :places_list 
-                                     :place 
-                                     :places_list_place 
-                                     :feature 
-                                     :place_feature 
-                                     :static_page 
+                                    [:user
+                                     :city
+                                     :feature
+                                     :file
+                                     :place
+                                     :place_feature
+                                     :plae_file
+                                     :places_list
+                                     :places_list_place
+                                     :static_page
                                      :navbar_item])
         valid-schema {:user (first user)
                       :city (first city)
-                      :places_list (first places-list)
-                      :place (first place)
-                      :places_list_place (first places-list-place)
                       :feature (first feature)
+                      :file (first file)
+                      :place (first place)
                       :place_feature (first place-feature)
+                      :place_file (first place-file)
+                      :places_list (first places-list)
+                      :places_list_place (first places-list-place)
                       :static_page (first static-page)
-                      :navbar_item (first navbar-item)}] 
+                      :navbar_item (first navbar-item)}]
     (if (= valid-schema current-schema)
       true
       (do
