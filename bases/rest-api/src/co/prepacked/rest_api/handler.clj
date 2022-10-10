@@ -56,7 +56,7 @@
   (let [slug (-> req :params :slug)]
     (with-valid-slug slug
       (if-let [{:keys [id] :as city} (city/city-by-slug slug)]
-        (let [city' (assoc city 
+        (let [city' (assoc city
                            :places_lists (places-list/get-places-lists id)
                            :static_pages (static-page/get-static-pages id)
                            :navbar_items (navbar-item/navbar-items id))]
@@ -151,6 +151,33 @@
     (with-valid-slug feature-id
       (let [[ok? res] (place/delete-feature-in-place! place-id feature-id)]
         (handle (if ok? 200 404) res)))))
+
+(defn add-place-file [req]
+  (let [auth-user (-> req :auth-user)
+        place-id (-> req :params :place_id)
+        place-file (-> req :params :place_file)
+        {:keys [content-type tempfile]} (-> req :params :file)]
+    (if-let [ext (file/content-type->supported-ext content-type)]
+      (let [uuid (.toString (java.util.UUID/randomUUID))
+            filename (format "%s.%s" uuid ext)]
+        (try
+          (-> (file/resize-image tempfile ext 1200)
+              (file/save-to-s3 (format "images/%s" filename)))
+          (-> (file/resize-image tempfile ext 400)
+              (file/save-to-s3 (format "thumbnail_images/%s" filename)))
+          (let [[ok? res-file] (file/add-file! auth-user {:server_url (file/s3-public-server-url)
+                                                          :link filename})]
+            (if-not ok?
+              (handle 404 res-file)
+              (let [[ok? res] (place/add-image-to-place! place-id {:file_id (:id res-file)
+                                                                   :priority (or (:priority place-file) 0)})]
+                (handle (if ok? 200 404) {:file res-file :place_image res}))))
+          (catch Exception e
+            (handle 422 {:errors {:image (.toString e)}}))))
+      (handle 422 {:errors {:file ["Invalid file type."]}}))))
+
+(defn delete-place-file [req]
+  )
 
 (defn add-places-list [req]
   (let [auth-user (-> req :auth-user)
@@ -260,21 +287,6 @@
     (with-valid-slug slug
       (let [[ok? res] (navbar-item/delete-navbar-item! slug navbar-item-id)]
         (handle (if ok? 200 404) res)))))
-
-(defn post-image [req]
-  (let [{:keys [content-type tempfile]} (-> req :params :image_file)]
-    (if-let [ext (file/content-type->supported-ext content-type)]
-      (let [uuid (.toString (java.util.UUID/randomUUID))
-            filename (format "%s.%s" uuid ext)]
-        (try
-          (-> (file/resize-image tempfile ext 1000)
-              (file/save-to-s3 (format "images/%s" filename))) 
-          (-> (file/resize-image tempfile ext 300)
-              (file/save-to-s3 (format "thumbnail_images/%s" filename)))
-          (handle 201 {:filename filename})
-          (catch Exception e 
-            (handle 422 {:errors {:image (.toString e)}}))))
-      (handle 422 {:errors {:file ["Invalid file type."]}}))))
 
 (defn current-user [req]
   (let [auth-user (-> req :auth-user)]

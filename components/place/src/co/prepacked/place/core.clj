@@ -1,16 +1,15 @@
 (ns co.prepacked.place.core
-  (:require
-   [java-time]
-   [co.prepacked.place.osm :as osm]
-   [co.prepacked.place.store :as store]
-   [co.prepacked.feature.interface-ns :as feature]))
+  (:require [java-time]
+            [co.prepacked.place.osm :as osm]
+            [co.prepacked.place.store :as store]
+            [co.prepacked.feature.interface-ns :as feature]))
 
 (defn places-with-all-dependencies [city-id places-list-id]
   (let [places (store/places city-id places-list-id)
         features (->> (store/places-list-features places-list-id)
                       (group-by :place_id))
-        places' (->> places 
-                     (mapv (fn [{:keys [id] :as place}] 
+        places' (->> places
+                     (mapv (fn [{:keys [id] :as place}]
                              (assoc place :features (get features id [])))))]
     [true places']))
 
@@ -85,3 +84,9 @@
         [true nil])
       [false {:errors {:other ["Cannot find the specified feature for the place."]}}])
     [false {:errors {:city ["There is no place with the specified id."]}}]))
+
+(defn add-image-to-place! [place-id input]
+  )
+
+(defn delete-image-in-place! [place-id file-id]
+  )

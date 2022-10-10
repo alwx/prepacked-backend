@@ -30,7 +30,9 @@
   (DELETE  "/api/places/:place_id" [] handler/delete-place)
   (POST    "/api/places/:place_id/features" [] handler/add-place-feature)
   (PUT     "/api/places/:place_id/features/:feature_id" [] handler/edit-place-feature)
-  (DELETE  "/api/places/:place_id/features/:feature_id" [] handler/delete-place-feature)
+  (DELETE  "/api/places/:place_id/features/:feature_id" [] handler/delete-place-feature) 
+  (POST    "/api/places/:place_id/files" [] handler/add-place-file) 
+  (DELETE  "/api/places/:place_id/files/:file_id" [] handler/delete-place-file)
   (POST    "/api/cities/:slug/places-lists" [] handler/add-places-list)
   (PUT     "/api/cities/:slug/places-lists/:places_list_slug" [] handler/edit-places-list)
   (DELETE  "/api/cities/:slug/places-lists/:places_list_slug" [] handler/delete-places-list)
@@ -44,8 +46,6 @@
   (POST    "/api/cities/:slug/navbar-items" [] handler/add-navbar-item)
   (PUT     "/api/cities/:slug/navbar-items/:navbar_item_id" [] handler/edit-navbar-item)
   (DELETE  "/api/cities/:slug/navbar-items/:navbar_item_id" [] handler/delete-navbar-item)
-  
-  (POST    "/api/files/images" [] handler/post-image)
 
   (GET     "/api/user" [] handler/current-user)
   (PUT     "/api/user" [] handler/update-user))

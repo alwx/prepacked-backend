@@ -47,7 +47,6 @@
     :file
     [[:id :integer :primary :key :autoincrement]
      [:user_id :integer "references user(id)"]
-     [:type :text]
      [:server_url :text]
      [:link :text]
      [:created_at :datetime]]

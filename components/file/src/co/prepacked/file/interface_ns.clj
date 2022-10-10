@@ -12,5 +12,8 @@
 (defn save-to-s3 [bytes filename]
   (s3/save bytes filename))
 
-(defn add-file! [file-input]
-  (core/add-file! file-input))
+(defn s3-public-server-url []
+  (s3/s3-public-server-url))
+
+(defn add-file! [auth-user file-input]
+  (core/add-file! auth-user file-input))

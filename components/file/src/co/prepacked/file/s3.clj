@@ -1,5 +1,7 @@
 (ns co.prepacked.file.s3
-  (:require [[amazonica.aws.s3 :as s3]]))
+  (:require [amazonica.aws.s3 :as s3]
+            [co.prepacked.env.interface-ns :as env]
+            [co.prepacked.log.interface-ns :as log]))
 
 (defn- s3-config []
   (or (env/get-var :s3)
@@ -22,7 +24,7 @@
 (defn- create-bucket [cred bucket-name]
   (s3/create-bucket cred bucket-name))
 
-(defn save-to-s3 [bytes filename]
+(defn save [bytes filename]
   (let [{:keys [bucket] :as config} (s3-config)
         cred (s3-credentials config)
         stream (java.io.ByteArrayInputStream. bytes)]
@@ -34,3 +36,6 @@
      :bucket-name bucket
      :input-stream stream
      :key filename)))
+
+(defn s3-public-server-url []
+  (:public-server-url (s3-config)))
