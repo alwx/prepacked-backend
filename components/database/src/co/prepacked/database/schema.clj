@@ -88,7 +88,7 @@
   [(jdbc/create-table-ddl
     :place_file
     [[:place_id :integer "references place(id)"]
-     [:file_id :text "references file(id)"]
+     [:file_id :integer "references file(id)"]
      [:priority :integer "default 0"]])
    "CREATE UNIQUE INDEX idx_place_file ON place_file (place_id, file_id)"])
 

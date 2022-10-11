@@ -82,3 +82,33 @@
                        [:= :place_id place-id]
                        [:= :feature_id feature-id]]}]
     (jdbc/execute! (database/db) (sql/format query))))
+
+(defn places-list-files [places-list-id]
+  (let [query {:select [:place_file.* :file.server_url :file.link]
+               :from [[:place_file]]
+               :join [[:file] [:= :file.id :place_file.file_id]
+                      [:place] [:= :place.id :place_file.place_id]
+                      [:places_list_place] [:= :places_list_place.place_id :place.id]]
+               :where [:= :places_list_place.places_list_id places-list-id]
+               :order-by [[:place_file.priority :desc]]}
+        results (jdbc/query (database/db) (sql/format query))]
+    results))
+
+(defn find-place-file [place-id file-id]
+  (let [query {:select [:*]
+               :from [:place_file]
+               :where [:and
+                       [:= :place_id place-id]
+                       [:= :file_id file-id]]}
+        results (jdbc/query (database/db) (sql/format query))]
+    (first results)))
+
+(defn insert-place-file! [input]
+  (jdbc/insert! (database/db) :place_file input))
+
+(defn delete-place-file! [place-id file-id]
+  (let [query {:delete-from :place_file
+               :where [:and
+                       [:= :place_id place-id]
+                       [:= :file_id file-id]]}]
+    (jdbc/execute! (database/db) (sql/format query))))

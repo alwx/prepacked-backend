@@ -158,26 +158,32 @@
         place-file (-> req :params :place_file)
         {:keys [content-type tempfile]} (-> req :params :file)]
     (if-let [ext (file/content-type->supported-ext content-type)]
-      (let [uuid (.toString (java.util.UUID/randomUUID))
-            filename (format "%s.%s" uuid ext)]
-        (try
-          (-> (file/resize-image tempfile ext 1200)
-              (file/save-to-s3 (format "images/%s" filename)))
-          (-> (file/resize-image tempfile ext 400)
-              (file/save-to-s3 (format "thumbnail_images/%s" filename)))
-          (let [[ok? res-file] (file/add-file! auth-user {:server_url (file/s3-public-server-url)
-                                                          :link filename})]
-            (if-not ok?
-              (handle 404 res-file)
-              (let [[ok? res] (place/add-image-to-place! place-id {:file_id (:id res-file)
-                                                                   :priority (or (:priority place-file) 0)})]
-                (handle (if ok? 200 404) {:file res-file :place_image res}))))
-          (catch Exception e
-            (handle 422 {:errors {:image (.toString e)}}))))
-      (handle 422 {:errors {:file ["Invalid file type."]}}))))
+      (if (place/place-by-id place-id)
+        (let [uuid (.toString (java.util.UUID/randomUUID))
+              filename (format "%s.%s" uuid ext)]
+          (try
+            (-> (file/resize-image tempfile ext 1200)
+                (file/save-to-s3 (format "images/%s" filename)))
+            (-> (file/resize-image tempfile ext 400)
+                (file/save-to-s3 (format "thumbnail_images/%s" filename)))
+            (let [[ok? res-file] (file/add-file! auth-user {:server_url (file/s3-public-server-url)
+                                                            :link filename})]
+              (if-not ok?
+                (handle 404 res-file)
+                (let [[ok? res] (place/add-file-to-place! place-id {:file_id (:id res-file)
+                                                                    :priority (or (:priority place-file) 0)})]
+                  (handle (if ok? 200 404) {:file res-file :place_file res}))))
+            (catch Exception e
+              (handle 422 {:errors {:image (.toString e)}}))))
+        (handle 400 {:errors {:place ["The place with the specified ID doesn't exist."]}}))
+      (handle 422 {:errors {:file ["Invalid file."]}}))))
 
 (defn delete-place-file [req]
-  )
+  (let [place-id (-> req :params :place_id)
+        file-id (-> req :params :file_id)]
+    (with-valid-slug file-id
+      (let [[ok? res] (place/delete-file-in-place! place-id file-id)]
+        (handle (if ok? 200 404) res)))))
 
 (defn add-places-list [req]
   (let [auth-user (-> req :auth-user)

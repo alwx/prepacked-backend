@@ -15,5 +15,8 @@
 (defn s3-public-server-url []
   (s3/s3-public-server-url))
 
+(defn file-by-id [id]
+  (core/file-by-id id))
+
 (defn add-file! [auth-user file-input]
   (core/add-file! auth-user file-input))

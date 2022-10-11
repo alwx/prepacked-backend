@@ -4,6 +4,9 @@
             [co.prepacked.log.interface-ns :as log]
             [co.prepacked.file.store :as store]))
 
+(defn file-by-id [id]
+  (store/find-by-id id))
+
 (defn add-file! [auth-user file-data]
   (let [now (java-time/instant)
         file-data' (merge file-data

@@ -2,15 +2,18 @@
   (:require [java-time]
             [co.prepacked.place.osm :as osm]
             [co.prepacked.place.store :as store]
-            [co.prepacked.feature.interface-ns :as feature]))
+            [co.prepacked.feature.interface-ns :as feature]
+            [co.prepacked.file.interface-ns :as file]))
 
 (defn places-with-all-dependencies [city-id places-list-id]
   (let [places (store/places city-id places-list-id)
         features (->> (store/places-list-features places-list-id)
                       (group-by :place_id))
+        files (->> (store/places-list-files places-list-id)
+                   (group-by :place_id))
         places' (->> places
                      (mapv (fn [{:keys [id] :as place}]
-                             (assoc place :features (get features id [])))))]
+                             (assoc place :features (get features id []) :files (get files id [])))))]
     [true places']))
 
 (defn place-by-id [id]
@@ -85,8 +88,22 @@
       [false {:errors {:other ["Cannot find the specified feature for the place."]}}])
     [false {:errors {:city ["There is no place with the specified id."]}}]))
 
-(defn add-image-to-place! [place-id input]
-  )
+(defn add-file-to-place! [place-id input]
+  (if (store/find-by-id place-id)
+    (if (file/file-by-id (:file_id input))
+      (let [input' (merge input {:place_id place-id})]
+        (store/insert-place-file! input')
+        (if-let [place-file (store/find-place-file place-id (:file_id input'))]
+          [true place-file]
+          [false {:errors {:other ["Cannot update the place's file in the database."]}}]))
+      [false {:errors {:city ["There is no file with the specified id."]}}])
+    [false {:errors {:city ["There is no place with the specified id."]}}]))
 
-(defn delete-image-in-place! [place-id file-id]
-  )
+(defn delete-file-in-place! [place-id file-id]
+  (if (store/find-by-id place-id)
+    (if (store/find-place-file place-id file-id)
+      (do
+        (store/delete-place-file! place-id file-id)
+        [true nil])
+      [false {:errors {:other ["Cannot find the specified file for the place."]}}])
+    [false {:errors {:city ["There is no place with the specified id."]}}]))

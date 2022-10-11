@@ -26,8 +26,8 @@
 (defn delete-feature-in-place! [place-id feature-id]
   (core/delete-feature-in-place! place-id feature-id))
 
-(defn add-image-to-place! [place-id input]
-  (core/add-image-to-place! place-id input))
+(defn add-file-to-place! [place-id input]
+  (core/add-file-to-place! place-id input))
 
-(defn delete-image-in-place! [place-id file-id]
-  (core/delete-image-in-place! place-id file-id))
+(defn delete-file-in-place! [place-id file-id]
+  (core/delete-file-in-place! place-id file-id))
