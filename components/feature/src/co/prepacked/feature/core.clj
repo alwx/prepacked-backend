@@ -8,19 +8,23 @@
 
 (defn add-feature! [feature-data]
   (jdbc/with-db-transaction [con (database/db)]
-    (store/insert-feature! con feature-data)
-    (if-let [feature (store/find-by-id con (:id feature-data))]
-      [true feature]
-      [false {:errors {:other ["Cannot insert the feature into the database."]} :-code 500}])))
+    (if (store/find-by-id con (:id feature-data))
+      [false {:errors {:feature ["A feature with the provided id already exists."]} :-code 400}]
+      (do (store/insert-feature! con feature-data)
+          (if-let [feature (store/find-by-id con (:id feature-data))]
+            [true feature]
+            [false {:errors {:other ["Cannot insert the feature into the database."]} :-code 500}])))))
 
 (defn update-feature! [feature-id feature-data]
   (jdbc/with-db-transaction [con (database/db)]
     (if (store/find-by-id con feature-id)
-      (do (store/update-feature! con feature-id feature-data)
-          (if-let [place (store/find-by-id con (:id feature-data))]
-            [true place]
-            [false {:errors {:other ["Cannot update the feature in the database."]} :-code 500}]))
-      [false {:errors {:place ["A feature with the provided id doesn't exist."]} :-code 404}])))
+      (if (store/find-by-id con (:id feature-data))
+        [false {:errors {:feature ["A feature with the provided id already exists."]} :-code 400}]
+        (do (store/update-feature! con feature-id feature-data)
+            (if-let [place (store/find-by-id con (:id feature-data))]
+              [true place]
+              [false {:errors {:other ["Cannot update the feature in the database."]} :-code 500}])))
+      [false {:errors {:feature ["A feature with the provided id doesn't exist."]} :-code 404}])))
 
 (defn delete-feature! [feature-id]
   (jdbc/with-db-transaction [con (database/db)]

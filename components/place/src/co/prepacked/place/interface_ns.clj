@@ -29,5 +29,8 @@
 (defn handle-file-upload! [auth-user place-id input]
   (core/handle-file-upload! auth-user place-id input))
 
+(defn update-file-in-place! [place-id file-id input]
+  (core/update-file-in-place! place-id file-id input))
+
 (defn delete-file-in-place! [place-id file-id]
   (core/delete-file-in-place! place-id file-id))

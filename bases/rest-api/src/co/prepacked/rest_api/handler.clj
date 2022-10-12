@@ -1,5 +1,6 @@
 (ns co.prepacked.rest-api.handler
   (:require
+   [clojure.edn :as edn]
    [clojure.spec.alpha :as s]
    [co.prepacked.place.interface-ns :as place]
    [co.prepacked.place.spec :as place-spec]
@@ -15,6 +16,14 @@
    [co.prepacked.env.interface-ns :as env]
    [co.prepacked.user.interface-ns :as user]
    [co.prepacked.user.spec :as user-spec]))
+
+(defn parse-query-param [param]
+  (if (string? param)
+    (try
+      (edn/read-string param)
+      (catch Exception _
+        param))
+    param))
 
 (defn- handle
   ([status body]
@@ -136,13 +145,24 @@
         [_ res] (place/delete-feature-in-place! place-id feature-id)]
     (handle-result res)))
 
-(defn add-place-file [req]
+(defn form-upload-place-file [req]
+  ;; this one is special because it expects form data, not a JSON
   (let [auth-user (-> req :auth-user)
         place-id (-> req :params :place_id)
-        place-file (-> req :params)]
-    (println "REQ" req)
-    (if (s/valid? place-spec/add-file-to-place place-file)
-      (let [[_ res] (place/handle-file-upload! auth-user place-id place-file)]
+        params (-> req 
+                   :params
+                   (update :priority parse-query-param))]
+    (if (s/valid? place-spec/upload-file-for-place params)
+      (let [[_ res] (place/handle-file-upload! auth-user place-id params)]
+        (handle-result res))
+      (handle-invalid-spec))))
+
+(defn edit-place-file [req]
+  (let [place-id (-> req :params :place_id)
+        file-id (-> req :params :file_id)
+        place-file (-> req :params :place_file)]
+    (if (s/valid? place-spec/update-file-in-place place-file)
+      (let [[_ res] (place/update-file-in-place! place-id file-id place-file)]
         (handle-result res))
       (handle-invalid-spec))))
 

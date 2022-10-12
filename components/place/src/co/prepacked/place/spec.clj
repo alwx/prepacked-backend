@@ -27,8 +27,12 @@
             :spec {:feature_id spec/slug?
                    :value string?}}))
 
-(def add-file-to-place 
-  (ds/spec {:name :core/add-feature-to-place
+(def upload-file-for-place
+  (ds/spec {:name :core/add-file-to-place
             :spec {:priority int?
                    :copyright string?
                    :file any?}}))
+
+(def update-file-in-place
+  (ds/spec {:name :core/update-file-in-place
+            :spec {:priority int?}}))

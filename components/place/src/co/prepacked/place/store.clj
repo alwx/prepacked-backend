@@ -101,6 +101,14 @@
 (defn insert-place-file! [con input]
   (jdbc/insert! con :place_file input))
 
+(defn update-place-file! [con place-id feature-id place-file-input]
+  (let [query {:update :place_file
+               :set place-file-input
+               :where [:and
+                       [:= :place_id place-id]
+                       [:= :feature_id feature-id]]}]
+    (jdbc/execute! con (sql/format query))))
+
 (defn delete-place-file! [con place-id file-id]
   (let [query {:delete-from :place_file
                :where [:and
