@@ -1,34 +1,33 @@
 (ns co.prepacked.file.store
   (:require
    [clojure.java.jdbc :as jdbc]
-   [co.prepacked.database.interface-ns :as database]
    [honey.sql :as sql]))
 
-(defn find-by [key value]
+(defn find-by [con key value]
   (let [query {:select [:*]
                :from   [:file]
                :where  [:= key value]}
-        results (jdbc/query (database/db) (sql/format query))]
+        results (jdbc/query con (sql/format query))]
     (first results)))
 
-(defn find-by-id [id]
-  (find-by :id id))
+(defn find-by-id [con id]
+  (find-by con :id id))
 
-(defn insert-file! [file-input]
+(defn insert-file! [con file-input]
   (let [result (jdbc/insert!
-                (database/db)
+                con
                 :file
                 file-input
                 {:return-keys ["id"]})]
     (-> result first first val)))
 
-(defn update-file! [id file-input]
+(defn update-file! [con id file-input]
   (let [query {:update :file
                :set    file-input
                :where  [:= :id id]}]
-    (jdbc/execute! (database/db) (sql/format query))))
+    (jdbc/execute! con (sql/format query))))
 
-(defn delete-file! [id]
+(defn delete-file! [con id]
   (let [query {:delete-from :file
                :where [:= :id id]}]
-    (jdbc/execute! (database/db) (sql/format query))))
+    (jdbc/execute! con (sql/format query))))

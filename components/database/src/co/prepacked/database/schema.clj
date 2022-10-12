@@ -49,6 +49,7 @@
      [:user_id :integer "references user(id)"]
      [:server_url :text]
      [:link :text]
+     [:copyright :text]
      [:created_at :datetime]]
     {:entities identity})])
 

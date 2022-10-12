@@ -11,28 +11,28 @@
         results (jdbc/query (database/db) (sql/format query) {:identifiers identity})]
     results))
 
-(defn find-by [city-id key value]
+(defn find-by [con city-id key value]
   (let [query {:select [:*]
                :from   [:static_page]
                :where  [:and 
                         [:= key value]
                         [:= :city_id city-id]]}
-        results (jdbc/query (database/db) (sql/format query))]
+        results (jdbc/query con (sql/format query))]
     (first results)))
 
-(defn find-by-slug [city-id slug]
-  (find-by city-id :slug slug))
+(defn find-by-slug [con city-id slug]
+  (find-by con city-id :slug slug))
 
-(defn insert-static-page! [static-page-input]
-  (jdbc/insert! (database/db) :static_page static-page-input))
+(defn insert-static-page! [con static-page-input]
+  (jdbc/insert! con :static_page static-page-input))
 
-(defn update-static-page! [id static-page-input]
+(defn update-static-page! [con id static-page-input]
   (let [query {:update :static_page
                :set    static-page-input
                :where  [:= :id id]}]
-    (jdbc/execute! (database/db) (sql/format query))))
+    (jdbc/execute! con (sql/format query))))
 
-(defn delete-static-page! [id]
+(defn delete-static-page! [con id]
   (let [query {:delete-from :static_page
                :where [:= :id id]}]
-    (jdbc/execute! (database/db) (sql/format query))))
+    (jdbc/execute! con (sql/format query))))

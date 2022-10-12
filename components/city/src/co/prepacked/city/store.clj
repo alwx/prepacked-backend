@@ -1,8 +1,7 @@
 (ns co.prepacked.city.store
-  (:require 
-    [clojure.java.jdbc :as jdbc]
-    [co.prepacked.database.interface-ns :as database]
-    [honey.sql :as sql]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [co.prepacked.database.interface-ns :as database]
+            [honey.sql :as sql]))
 
 (defn all-cities []
   (let [query {:select [:*]
@@ -16,9 +15,6 @@
                :where  [:= key value]}
         results (jdbc/query (database/db) (sql/format query))]
     (first results)))
-
-(defn find-by-id [id]
-  (find-by :id id))
 
 (defn find-by-slug [slug]
   (find-by :slug slug))

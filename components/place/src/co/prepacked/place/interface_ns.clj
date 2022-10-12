@@ -5,8 +5,8 @@
 (defn places-with-all-dependencies [city-id places-list-id]
   (core/places-with-all-dependencies city-id places-list-id))
 
-(defn place-by-id [id]
-  (core/place-by-id id))
+(defn place-by-id [con id]
+  (core/place-by-id con id))
 
 (defn add-place! [auth-user place-input]
   (core/add-place! auth-user place-input))
@@ -26,8 +26,8 @@
 (defn delete-feature-in-place! [place-id feature-id]
   (core/delete-feature-in-place! place-id feature-id))
 
-(defn add-file-to-place! [place-id input]
-  (core/add-file-to-place! place-id input))
+(defn handle-file-upload! [auth-user place-id input]
+  (core/handle-file-upload! auth-user place-id input))
 
 (defn delete-file-in-place! [place-id file-id]
   (core/delete-file-in-place! place-id file-id))

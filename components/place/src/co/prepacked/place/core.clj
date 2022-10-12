@@ -1,109 +1,146 @@
 (ns co.prepacked.place.core
   (:require [java-time]
-            [co.prepacked.place.osm :as osm]
-            [co.prepacked.place.store :as store]
+            [clojure.java.jdbc :as jdbc]
+            [co.prepacked.database.interface-ns :as database]
             [co.prepacked.feature.interface-ns :as feature]
-            [co.prepacked.file.interface-ns :as file]))
+            [co.prepacked.file.interface-ns :as file]
+            [co.prepacked.place.osm :as osm]
+            [co.prepacked.place.store :as store]))
 
 (defn places-with-all-dependencies [city-id places-list-id]
-  (let [places (store/places city-id places-list-id)
-        features (->> (store/places-list-features places-list-id)
-                      (group-by :place_id))
-        files (->> (store/places-list-files places-list-id)
-                   (group-by :place_id))
-        places' (->> places
-                     (mapv (fn [{:keys [id] :as place}]
-                             (assoc place :features (get features id []) :files (get files id [])))))]
-    [true places']))
+  (jdbc/with-db-transaction [con (database/db)]
+    (let [places (store/places con city-id places-list-id)
+          features (->> (store/places-list-features con places-list-id)
+                        (group-by :place_id))
+          files (->> (store/places-list-files con places-list-id)
+                     (group-by :place_id))
+          places' (->> places
+                       (mapv (fn [{:keys [id] :as place}]
+                               (assoc place :features (get features id []) :files (get files id [])))))]
+      [true places'])))
 
-(defn place-by-id [id]
-  (store/find-by-id id))
+(defn place-by-id [con id]
+  (store/find-by-id con id))
 
 (defn add-place! [auth-user place-data]
-  (let [now (java-time/instant)
-        osm-data (osm/request-place-osm-data place-data)
-        place-data' (merge place-data
-                           osm-data
-                           {:user_id (:id auth-user)
-                            :created_at now
-                            :updated_at now})
-        place-id (store/insert-place! place-data')]
-    (if-let [place (store/find-by-id place-id)]
-      [true place]
-      [false {:errors {:other ["Cannot insert the place into the database."]}}])))
+  (jdbc/with-db-transaction [con (database/db)]
+    (let [now (java-time/instant)
+          osm-data (osm/request-place-osm-data place-data)
+          place-data' (merge place-data
+                             osm-data
+                             {:user_id (:id auth-user)
+                              :created_at now
+                              :updated_at now})
+          place-id (store/insert-place! con place-data')]
+      (if-let [place (store/find-by-id con place-id)]
+        [true place]
+        [false {:errors {:other ["Cannot insert the place into the database."]} :-code 500}]))))
 
 (defn update-place! [place-id place-data]
-  (if-let [old-place-data (store/find-by-id place-id)]
-    (let [now (java-time/instant)
-          osm-data (when (not= (:address old-place-data) (:address place-data))
-                     (osm/request-place-osm-data place-data))
-          place-data' (merge old-place-data
-                             place-data
-                             osm-data
-                             {:updated_at now})]
-      (store/update-place! place-id place-data')
-      (if-let [place (store/find-by-id place-id)]
-        [true place]
-        [false {:errors {:other ["Cannot update the place in the database."]}}]))
-    [false {:errors {:place ["A place with the provided id doesn't exist."]}}])
-  [false {:errors {:city ["There is no city with the specified slug."]}}])
+  (jdbc/with-db-transaction [con (database/db)]
+    (if-let [old-place-data (store/find-by-id con place-id)]
+      (let [now (java-time/instant)
+            osm-data (when (not= (:address old-place-data) (:address place-data))
+                       (osm/request-place-osm-data place-data))
+            place-data' (merge old-place-data
+                               place-data
+                               osm-data
+                               {:updated_at now})]
+        (store/update-place! con place-id place-data')
+        (if-let [place (store/find-by-id con place-id)]
+          [true place]
+          [false {:errors {:other ["Cannot update the place in the database."]} :-code 500}]))
+      [false {:errors {:place ["A place with the provided id doesn't exist."]} :-code 404}])))
 
 (defn delete-place! [place-id]
-  (if (store/find-by-id place-id)
-    (do
-      (store/delete-place! place-id)
-      [true nil])
-    [false {:errors {:other ["Cannot find the place in the database."]}}]))
+  (jdbc/with-db-transaction [con (database/db)]
+    (if (store/find-by-id con place-id)
+      (do
+        (store/delete-place! con place-id)
+        [true nil])
+      [false {:errors {:other ["Cannot find the place in the database."]} :-code 404}])))
 
 (defn add-feature-to-place! [place-id input]
-  (if (store/find-by-id place-id)
-    (if (feature/feature-by-id (:feature_id input))
-      (let [input' (merge input {:place_id place-id})]
-        (store/insert-place-feature! input')
-        (if-let [place-feature (store/find-place-feature place-id (:feature_id input'))]
-          [true place-feature]
-          [false {:errors {:other ["Cannot update the place's feature in the database."]}}]))
-      [false {:errors {:city ["There is no feature with the specified id."]}}])
-    [false {:errors {:city ["There is no place with the specified id."]}}]))
+  (jdbc/with-db-transaction [con (database/db)]
+    (if (store/find-by-id con place-id)
+      (if (feature/feature-by-id con (:feature_id input))
+        (let [input' (merge input {:place_id place-id})]
+          (store/insert-place-feature! con input')
+          (if-let [place-feature (store/find-place-feature con place-id (:feature_id input'))]
+            [true place-feature]
+            [false {:errors {:other ["Cannot update the place's feature in the database."]} :-code 500}]))
+        [false {:errors {:city ["There is no feature with the specified id."]} :-code 404}])
+      [false {:errors {:city ["There is no place with the specified id."]} :-code 404}])))
 
 (defn update-feature-in-place! [place-id feature-id input]
-  (if (store/find-by-id place-id)
-    (if (feature/feature-by-id (:feature_id input))
-      (if-let [place-feature (store/find-place-feature place-id feature-id)]
-        (let [input' (merge place-feature input {:place_id place-id})]
-          (store/update-place-feature! place-id feature-id input')
-          (if-let [place-feature (store/find-place-feature place-id (:feature_id input'))]
-            [true place-feature]
-            [false {:errors {:other ["Cannot update the place's feature in the database."]}}]))
-        [false {:errors {:other ["Cannot find the specified feature for the place."]}}])
-      [false {:errors {:city ["There is no feature with the specified id."]}}])
-    [false {:errors {:city ["There is no place with the specified id."]}}]))
+  (jdbc/with-db-transaction [con (database/db)]
+    (if (store/find-by-id con place-id)
+      (if (feature/feature-by-id con (:feature_id input))
+        (if-let [place-feature (store/find-place-feature con place-id feature-id)]
+          (let [input' (merge place-feature input {:place_id place-id})]
+            (store/update-place-feature! con place-id feature-id input')
+            (if-let [place-feature (store/find-place-feature con place-id (:feature_id input'))]
+              [true place-feature]
+              [false {:errors {:other ["Cannot update the place's feature in the database."]} :-code 500}]))
+          [false {:errors {:other ["Cannot find the specified feature for the place."]} :-code 404}])
+        [false {:errors {:city ["There is no feature with the specified id."]} :-code 404}])
+      [false {:errors {:city ["There is no place with the specified id."]} :-code 404}])))
 
 (defn delete-feature-in-place! [place-id feature-id]
-  (if (store/find-by-id place-id)
-    (if (store/find-place-feature place-id feature-id)
-      (do
-        (store/delete-place-feature! place-id feature-id)
-        [true nil])
-      [false {:errors {:other ["Cannot find the specified feature for the place."]}}])
-    [false {:errors {:city ["There is no place with the specified id."]}}]))
+  (jdbc/with-db-transaction [con (database/db)]
+    (if (store/find-by-id con place-id)
+      (if (store/find-place-feature con place-id feature-id)
+        (do
+          (store/delete-place-feature! con place-id feature-id)
+          [true nil])
+        [false {:errors {:other ["Cannot find the specified feature for the place."]} :-code 404}])
+      [false {:errors {:city ["There is no place with the specified id."]} :-code 404}])))
 
-(defn add-file-to-place! [place-id input]
-  (if (store/find-by-id place-id)
-    (if (file/file-by-id (:file_id input))
+(defn- add-file-to-place! [con place-id input]
+  (if (store/find-by-id con place-id)
+    (if (file/file-by-id con (:file_id input))
       (let [input' (merge input {:place_id place-id})]
-        (store/insert-place-file! input')
-        (if-let [place-file (store/find-place-file place-id (:file_id input'))]
+        (store/insert-place-file! con input')
+        (if-let [place-file (store/find-place-file con place-id (:file_id input'))]
           [true place-file]
-          [false {:errors {:other ["Cannot update the place's file in the database."]}}]))
-      [false {:errors {:city ["There is no file with the specified id."]}}])
-    [false {:errors {:city ["There is no place with the specified id."]}}]))
+          [false {:errors {:other ["Cannot update the place's file in the database."]} :-code 500}]))
+      [false {:errors {:city ["There is no file with the specified id."]} :-code 404}])
+    [false {:errors {:city ["There is no place with the specified id."]} :-code 404}]))
+
+(defn handle-file-upload! [auth-user place-id input]
+  (let [{:keys [copyright priority file]} input
+        {:keys [content-type tempfile]} file]
+    (if-let [ext (file/content-type->supported-ext content-type)]
+      (jdbc/with-db-transaction [con (database/db)]
+        (if (store/find-by-id con place-id)
+          (let [uuid (.toString (java.util.UUID/randomUUID))
+                filename (format "%s.%s" uuid ext)]
+            (try
+              (-> (file/resize-image tempfile ext 1200)
+                  (file/save-to-s3 (format "images/%s" filename)))
+              (-> (file/resize-image tempfile ext 400)
+                  (file/save-to-s3 (format "thumbnail_images/%s" filename)))
+              (let [[ok? res-file] (file/add-file! con auth-user {:server_url (file/s3-public-server-url)
+                                                                  :link filename
+                                                                  :copyright copyright})]
+                (if ok?
+                  (let [[ok? res] (add-file-to-place! con place-id {:file_id (:id res-file)
+                                                                    :priority priority})]
+                    (if ok?
+                      [true {:file res-file :place_file res}]
+                      [false res]))
+                  [false res-file]))
+              (catch Exception e
+                [false {:errors {:image (.toString e)} :-code 500}])))
+          [false {:errors {:place ["The place with the specified ID doesn't exist."]} :-code 404}]))
+      [false {:errors {:file ["Invalid file."]} :-code 422}])))
 
 (defn delete-file-in-place! [place-id file-id]
-  (if (store/find-by-id place-id)
-    (if (store/find-place-file place-id file-id)
-      (do
-        (store/delete-place-file! place-id file-id)
-        [true nil])
-      [false {:errors {:other ["Cannot find the specified file for the place."]}}])
-    [false {:errors {:city ["There is no place with the specified id."]}}]))
+  (jdbc/with-db-transaction [con (database/db)]
+    (if (store/find-by-id con place-id)
+      (if (store/find-place-file con place-id file-id)
+        (do
+          (store/delete-place-file! con place-id file-id)
+          [true nil])
+        [false {:errors {:other ["Cannot find the specified file for the place."]} :-code 404}])
+      [false {:errors {:city ["There is no place with the specified id."]} :-code 404}])))

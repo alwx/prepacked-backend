@@ -2,8 +2,8 @@
   (:require
    [co.prepacked.feature.core :as core]))
 
-(defn feature-by-id [id]
-  (core/feature-by-id id))
+(defn feature-by-id [con id]
+  (core/feature-by-id con id))
 
 (defn add-feature! [feature-input]
   (core/add-feature! feature-input))

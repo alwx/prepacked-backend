@@ -26,3 +26,9 @@
   (ds/spec {:name :core/update-feature-in-place
             :spec {:feature_id spec/slug?
                    :value string?}}))
+
+(def add-file-to-place 
+  (ds/spec {:name :core/add-feature-to-place
+            :spec {:priority int?
+                   :copyright string?
+                   :file any?}}))
