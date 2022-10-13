@@ -11,3 +11,9 @@
 
 (defn run-migrations [db]
   (core/run-migrations db))
+
+(def instant->sql-timestamp core/instant->sql-timestamp)
+
+(def ->uuid core/->uuid)
+
+(def add-now-timestamps core/add-now-timestamps)

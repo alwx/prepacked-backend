@@ -1,6 +1,5 @@
 (ns co.prepacked.places-list.core
-  (:require [java-time]
-            [clojure.java.jdbc :as jdbc]
+  (:require [clojure.java.jdbc :as jdbc]
             [co.prepacked.database.interface-ns :as database]
             [co.prepacked.city.interface-ns :as city]
             [co.prepacked.file.interface-ns :as file]
@@ -13,9 +12,9 @@
           files (->> (store/city-files con city-id)
                      (group-by :places_list_id))
           places-lists' (->> places-lists
-                       (mapv (fn [{:keys [id] :as places-list}]
-                               (assoc places-list :files (get files id [])))))]
-      [true places-lists'])))
+                             (mapv (fn [{:keys [id] :as places-list}]
+                                     (assoc places-list :files (get files id [])))))]
+      places-lists')))
 
 (defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
   (let [[_ places] (place/places-with-all-dependencies city_id id)]
@@ -33,12 +32,8 @@
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
       (if (store/find-by-slug con city-id slug)
         [false {:errors {:slug ["A places list with the provided slug already exists."]} :-code 400}]
-        (let [now (java-time/instant)
-              places-list-data' (merge places-list-data
-                                       {:city_id city-id
-                                        :user_id (:id auth-user)
-                                        :created_at now
-                                        :updated_at now})]
+        (let [places-list-data' (merge places-list-data {:city_id city-id
+                                                         :user_id (:id auth-user)})]
           (store/insert-places-list! con places-list-data')
           (if-let [places-list (store/find-by-slug con city-id slug)]
             [true places-list]
@@ -49,10 +44,8 @@
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
       (if-let [{city-places-list-id :id :as old-places-list-data} (store/find-by-slug con city-id places-list-slug)]
-        (let [now (java-time/instant)
-              places-list-data' (merge old-places-list-data
-                                       places-list-data
-                                       {:updated_at now})]
+        (let [places-list-data' (merge old-places-list-data
+                                       places-list-data)]
           (store/update-places-list! con city-places-list-id places-list-data')
           (if-let [places-list (store/find-by-slug con city-id (:slug places-list-data'))]
             [true places-list]
@@ -77,12 +70,8 @@
         (if (place/place-by-id con (:place_id input))
           (if (store/find-places-list-place con city-places-list-id (:place_id input))
             [false {:errors {:slug ["The place is already added to the specified places list."]} :-code 400}]
-            (let [now (java-time/instant)
-                  input' (merge input
-                                {:places_list_id city-places-list-id
-                                 :user_id (:id auth-user)
-                                 :created_at now
-                                 :updated_at now})]
+            (let [input' (merge input {:places_list_id city-places-list-id
+                                       :user_id (:id auth-user)})]
               (store/insert-places-list-place! con input')
               (if-let [places-list-place (store/find-places-list-place con city-places-list-id (:place_id input'))]
                 [true places-list-place]
@@ -96,16 +85,11 @@
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
       (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
         (if-let [places-list-place (store/find-places-list-place con city-places-list-id place-id)]
-          (if (store/find-places-list-place con city-places-list-id (:place_id input))
-            [false {:errors {:slug ["The place is already added to the specified places list."]} :-code 400}]
-            (let [now (java-time/instant)
-                  input' (merge places-list-place
-                                input
-                                {:updated_at now})]
-              (store/update-places-list-place! con city-places-list-id place-id input')
-              (if-let [places-list-place' (store/find-places-list-place con city-places-list-id place-id)]
-                [true places-list-place']
-                [false {:errors {:other ["Cannot update the place in the database."]} :-code 500}])))
+          (let [input' (merge places-list-place input)]
+            (store/update-places-list-place! con city-places-list-id place-id input')
+            (if-let [places-list-place' (store/find-places-list-place con city-places-list-id place-id)]
+              [true places-list-place']
+              [false {:errors {:other ["Cannot update the place in the database."]} :-code 500}]))
           [false {:errors {:other ["Cannot find the specified place in the place list."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
       [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))

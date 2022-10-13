@@ -6,7 +6,7 @@
 (defn all-cities []
   (let [query {:select [:*]
                :from   [:city]}
-        results (jdbc/query (database/db) (sql/format query) {:identifiers identity})]
+        results (jdbc/query (database/db) (sql/format query))]
     results))
 
 (defn find-by [key value]

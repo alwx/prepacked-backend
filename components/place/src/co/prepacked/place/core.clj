@@ -1,6 +1,5 @@
 (ns co.prepacked.place.core
-  (:require [java-time]
-            [clojure.java.jdbc :as jdbc]
+  (:require [clojure.java.jdbc :as jdbc]
             [co.prepacked.database.interface-ns :as database]
             [co.prepacked.feature.interface-ns :as feature]
             [co.prepacked.file.interface-ns :as file]
@@ -26,13 +25,8 @@
 
 (defn add-place! [auth-user place-data]
   (jdbc/with-db-transaction [con (database/db)]
-    (let [now (java-time/instant)
-          osm-data (osm/request-place-osm-data place-data)
-          place-data' (merge place-data
-                             osm-data
-                             {:user_id (:id auth-user)
-                              :created_at now
-                              :updated_at now})
+    (let [osm-data (osm/request-place-osm-data place-data)
+          place-data' (merge place-data osm-data {:user_id (:id auth-user)})
           place-id (store/insert-place! con place-data')]
       (if-let [place (store/find-by-id con place-id)]
         [true place]
@@ -41,13 +35,11 @@
 (defn update-place! [place-id place-data]
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [old-place-data (store/find-by-id con place-id)]
-      (let [now (java-time/instant)
-            osm-data (when (not= (:address old-place-data) (:address place-data))
+      (let [osm-data (when (not= (:address old-place-data) (:address place-data))
                        (osm/request-place-osm-data place-data))
             place-data' (merge old-place-data
                                place-data
-                               osm-data
-                               {:updated_at now})]
+                               osm-data)]
         (store/update-place! con place-id place-data')
         (if-let [place (store/find-by-id con place-id)]
           [true place]

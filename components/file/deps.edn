@@ -1,6 +1,5 @@
 {:paths ["src" "resources"]
  :deps {amazonica/amazonica {:mvn/version "0.3.162"}
-        clojure.java-time/clojure.java-time {:mvn/version "0.3.3"}
         com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
         metosin/spec-tools {:mvn/version "0.10.5"}
         net.mikera/imagez {:mvn/version "0.12.0"}

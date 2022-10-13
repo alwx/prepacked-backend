@@ -1,11 +1,11 @@
 (ns co.prepacked.database.core
-  (:require
-   [ragtime.jdbc]
-   [ragtime.core]
-   [ragtime.reporter]
-   [ragtime.strategy]
-   [co.prepacked.env.interface-ns :as env]
-   [co.prepacked.log.interface-ns :as log]))
+  (:require [java-time]
+            [ragtime.jdbc]
+            [ragtime.core]
+            [ragtime.reporter]
+            [ragtime.strategy]
+            [co.prepacked.env.interface-ns :as env]
+            [co.prepacked.log.interface-ns :as log]))
 
 (defonce db-data
   (or (env/get-var :db)
@@ -27,6 +27,19 @@
         migration-index (atom {})
         migrations (ragtime.jdbc/load-resources "database/migrations")
         index (swap! migration-index ragtime.core/into-index migrations)
-        options {:strategy ragtime.strategy/raise-error 
+        options {:strategy ragtime.strategy/raise-error
                  :reporter ragtime.reporter/print}]
     (ragtime.core/migrate-all datastore index migrations options)))
+
+(defn instant->sql-timestamp [instant]
+  (java.sql.Timestamp/from instant))
+
+(defn ->uuid [varchar]
+  [:cast varchar :uuid])
+
+(defn add-now-timestamps [m ks]
+  (let [now (instant->sql-timestamp (java-time/instant))]
+    (reduce (fn [m k]
+              (assoc m k now))
+            m
+            ks)))

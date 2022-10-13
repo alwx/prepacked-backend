@@ -190,7 +190,7 @@
         slug (-> req :params :slug)
         places-list-data (-> req :params :places_list)]
     (if (s/valid? places-list-spec/add-places-list places-list-data)
-      (let [[res] (places-list/add-places-list! auth-user slug places-list-data)]
+      (let [[_ res] (places-list/add-places-list! auth-user slug places-list-data)]
         (handle-result res))
       (handle-invalid-spec))))
 

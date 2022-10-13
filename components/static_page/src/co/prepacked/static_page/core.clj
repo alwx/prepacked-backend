@@ -1,6 +1,5 @@
 (ns co.prepacked.static-page.core
-  (:require [java-time]
-            [clojure.java.jdbc :as jdbc]
+  (:require [clojure.java.jdbc :as jdbc]
             [co.prepacked.city.interface-ns :as city]
             [co.prepacked.database.interface-ns :as database]
             [co.prepacked.static-page.store :as store]))
@@ -13,11 +12,7 @@
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
       (if-let [_ (store/find-by-slug con city-id slug)]
         [false {:errors {:slug ["A static page with the provided slug already exists."]} :-code 400}]
-        (let [now (java-time/instant)
-              static-page-data' (merge static-page-data
-                                       {:city_id city-id
-                                        :created_at now
-                                        :updated_at now})]
+        (let [static-page-data' (merge static-page-data {:city_id city-id})]
           (store/insert-static-page! con static-page-data')
           (if-let [static-page (store/find-by-slug con city-id slug)]
             [true static-page]
@@ -28,10 +23,7 @@
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
       (if-let [{city-static-page-id :id} (store/find-by-slug con city-id static-page-slug)]
-        (let [now (java-time/instant)
-              static-page-data' (merge static-page-data
-                                       {:city_id city-id
-                                        :updated_at now})]
+        (let [static-page-data' (merge static-page-data {:city_id city-id})]
           (store/update-static-page! con city-static-page-id static-page-data')
           (if-let [static-page (store/find-by-slug con city-id (:slug static-page-data))]
             [true static-page]

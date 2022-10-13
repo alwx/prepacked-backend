@@ -1,5 +1,6 @@
 (ns co.prepacked.place.osm
   (:require
+   [clojure.edn :as edn]
    [clj-http.client :as client]
    [camel-snake-kebab.core :refer [->kebab-case-keyword]]
    [co.prepacked.env.interface-ns :as env]
@@ -7,6 +8,14 @@
 
 (defmethod client/coerce-response-body :json-kebab-keys [req resp]
   (client/coerce-json-body req resp (memoize ->kebab-case-keyword) false))
+
+(defn parse-query-param [param]
+  (if (string? param)
+    (try
+      (edn/read-string param)
+      (catch Exception _
+        param))
+    param))
 
 (defn- osm-server-base-url []
   (or (env/get-var :osm-server-base-url)
@@ -40,8 +49,8 @@
                        :body
                        first)] 
     {:osm_place_id (-> osm-object :place-id)
-     :osm_lat (-> osm-object :lat)
-     :osm_lon (-> osm-object :lon)
+     :osm_lat (-> osm-object :lat parse-query-param)
+     :osm_lon (-> osm-object :lon parse-query-param)
      :osm_amenity (-> osm-object :address :amenity)
      :osm_city (-> osm-object :address :city)
      :osm_city_district (-> osm-object :address :city-district)

@@ -13,8 +13,8 @@
      [:email :text :unique]
      [:username :text :unique]
      [:password :text]
-     [:created_at :time]
-     [:updated_at :time]]
+     [:created_at :timestamp]
+     [:updated_at :timestamp]]
     {:conditional? true})])
 
 (def city
@@ -45,7 +45,7 @@
      [:server_url :text]
      [:link :text]
      [:copyright :text]
-     [:created_at :time]]
+     [:created_at :timestamp]]
     {:conditional? true})])
 
 (def place
@@ -69,8 +69,8 @@
      [:osm_road :text]
      [:osm_suburb :text]
      [:osm_display_name :text]
-     [:created_at :time]
-     [:updated_at :time]]
+     [:created_at :timestamp]
+     [:updated_at :timestamp]]
     {:conditional? true})])
 
 (def place-feature
@@ -101,8 +101,8 @@
      [:title :text]
      [:description :text]
      [:priority :integer "DEFAULT 0 NOT NULL"]
-     [:created_at :time]
-     [:updated_at :time]]
+     [:created_at :timestamp]
+     [:updated_at :timestamp]]
     {:conditional? true})
    "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_city_id_slug ON places_list (city_id, slug)"])
 
@@ -113,8 +113,8 @@
      [:place_id :uuid "REFERENCES place(id)"]
      [:user_id :uuid "REFERENCES app_user(id)"]
      [:comment :text]
-     [:created_at :time]
-     [:updated_at :time]]
+     [:created_at :timestamp]
+     [:updated_at :timestamp]]
     {:conditional? true})
    "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_place ON places_list_place (places_list_id, place_id)"])
 
@@ -135,8 +135,8 @@
      [:slug :text]
      [:title :text]
      [:content :text]
-     [:created_at :time]
-     [:updated_at :time]]
+     [:created_at :timestamp]
+     [:updated_at :timestamp]]
     {:conditional? true})
    "CREATE UNIQUE INDEX IF NOT EXISTS idx_static_page_city_id_slug ON static_page (city_id, slug)"])
 

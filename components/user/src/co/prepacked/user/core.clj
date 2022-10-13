@@ -52,8 +52,8 @@
               user-input {:email    email
                           :username username
                           :password (encrypt-password password)
-                          :created_at now
-                          :updated_at now}]
+                          :created_at (database/instant->sql-timestamp now)
+                          :updated_at (database/instant->sql-timestamp now)}]
           (store/insert-user! con user-input)
           (if-let [user (store/find-by-email con email)]
             [true (user->visible-user user new-token)]
@@ -92,7 +92,7 @@
                                  {:password (when password (encrypt-password password))
                                   :email    (when email email)
                                   :username (when username username)
-                                  :updated_at now})]
+                                  :updated_at (database/instant->sql-timestamp now)})]
           (store/update-user! con (:id auth-user) user-input)
           (if-let [updated-user (store/find-by-email con email-to-use)]
             [true (user->visible-user updated-user (:token auth-user))]
