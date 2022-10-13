@@ -15,6 +15,17 @@
         results (jdbc/query con (sql/format query) {:identifiers identity})]
     results))
 
+(defn places-list-files [con places-list-id]
+  (let [query {:select [:place_file.* :file.server_url :file.link]
+               :from [[:place_file]]
+               :join [[:file] [:= :file.id :place_file.file_id]
+                      [:place] [:= :place.id :place_file.place_id]
+                      [:places_list_place] [:= :places_list_place.place_id :place.id]]
+               :where [:= :places_list_place.places_list_id places-list-id]
+               :order-by [[:place_file.priority :desc]]}
+        results (jdbc/query con (sql/format query))]
+    results))
+
 (defn find-by [con key value]
   (let [query {:select [:*]
                :from [:place]
@@ -77,17 +88,6 @@
                        [:= :place_id place-id]
                        [:= :feature_id feature-id]]}]
     (jdbc/execute! con (sql/format query))))
-
-(defn places-list-files [con places-list-id]
-  (let [query {:select [:place_file.* :file.server_url :file.link]
-               :from [[:place_file]]
-               :join [[:file] [:= :file.id :place_file.file_id]
-                      [:place] [:= :place.id :place_file.place_id]
-                      [:places_list_place] [:= :places_list_place.place_id :place.id]]
-               :where [:= :places_list_place.places_list_id places-list-id]
-               :order-by [[:place_file.priority :desc]]}
-        results (jdbc/query con (sql/format query))]
-    results))
 
 (defn find-place-file [con place-id file-id]
   (let [query {:select [:*]

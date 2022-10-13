@@ -2,8 +2,8 @@
   (:require
    [co.prepacked.places-list.core :as core]))
 
-(defn get-places-lists [city-id]
-  (core/places-lists city-id))
+(defn places-lists-with-all-dependencies [city-id]
+  (core/places-lists-with-all-dependencies city-id))
 
 (defn places-list-with-all-dependencies [city-slug places-list-slug]
   (core/places-list-with-all-dependencies city-slug places-list-slug))
@@ -25,3 +25,12 @@
 
 (defn delete-place-in-places-list! [city-slug places-list-slug place-id]
   (core/delete-place-in-places-list! city-slug places-list-slug place-id))
+
+(defn handle-file-upload! [auth-user city-slug places-list-slug input]
+  (core/handle-file-upload! auth-user city-slug places-list-slug input))
+
+(defn update-file-in-places-list! [city-slug places-list-slug file-id input]
+  (core/update-file-in-places-list! city-slug places-list-slug file-id input))
+
+(defn delete-file-in-places-list! [city-slug places-list-slug file-id]
+  (core/delete-file-in-places-list! city-slug places-list-slug file-id))

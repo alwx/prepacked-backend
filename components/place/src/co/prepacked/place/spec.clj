@@ -28,7 +28,7 @@
                    :value string?}}))
 
 (def upload-file-for-place
-  (ds/spec {:name :core/add-file-to-place
+  (ds/spec {:name :core/upload-file-for-place
             :spec {:priority int?
                    :copyright string?
                    :file any?}}))

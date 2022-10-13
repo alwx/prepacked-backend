@@ -16,7 +16,9 @@
                      (group-by :place_id))
           places' (->> places
                        (mapv (fn [{:keys [id] :as place}]
-                               (assoc place :features (get features id []) :files (get files id [])))))]
+                               (assoc place 
+                                      :features (get features id []) 
+                                      :files (get files id [])))))]
       [true places'])))
 
 (defn place-by-id [con id]
@@ -103,44 +105,31 @@
       [false {:errors {:city ["There is no place with the specified id."]} :-code 404}])))
 
 (defn- add-file-to-place! [con place-id input]
-  (if (store/find-by-id con place-id)
-    (if (file/file-by-id con (:file_id input))
-      (let [input' (merge input {:place_id place-id})]
-        (if (store/find-place-file con place-id (:file-id input'))
-          [false {:errors {:place_file ["This file is already added to the specified place."]} :-code 400}]
-          (do
-            (store/insert-place-file! con input')
-            (if-let [place-file (store/find-place-file con place-id (:file_id input'))]
-              [true place-file]
-              [false {:errors {:other ["Cannot update the place's file in the database."]} :-code 500}]))))
-      [false {:errors {:file ["There is no file with the specified id."]} :-code 404}])
-    [false {:errors {:place ["There is no place with the specified id."]} :-code 404}]))
+  (if (file/file-by-id con (:file_id input))
+    (let [input' (merge input {:place_id place-id})]
+      (if (store/find-place-file con place-id (:file-id input'))
+        [false {:errors {:place_file ["This file is already added to the specified place."]} :-code 400}]
+        (do
+          (store/insert-place-file! con input')
+          (if-let [place-file (store/find-place-file con place-id (:file_id input'))]
+            [true place-file]
+            [false {:errors {:other ["Cannot update the place's file in the database."]} :-code 500}]))))
+    [false {:errors {:file ["There is no file with the specified id."]} :-code 404}]))
 
 (defn handle-file-upload! [auth-user place-id input]
   (let [{:keys [copyright priority file]} input
-        {:keys [content-type tempfile]} file]
-    (if-let [ext (file/content-type->supported-ext content-type)]
+        {:keys [content-type]} file]
+    (if (file/content-type->supported-ext content-type)
       (jdbc/with-db-transaction [con (database/db)]
         (if (store/find-by-id con place-id)
-          (let [uuid (.toString (java.util.UUID/randomUUID))
-                filename (format "%s.%s" uuid ext)]
-            (try
-              (-> (file/resize-image tempfile ext 1200)
-                  (file/save-to-s3 (format "images/%s" filename)))
-              (-> (file/resize-image tempfile ext 400)
-                  (file/save-to-s3 (format "thumbnail_images/%s" filename)))
-              (let [[ok? res-file] (file/add-file! con auth-user {:server_url (file/s3-public-server-url)
-                                                                  :link filename
-                                                                  :copyright copyright})]
+          (let [[ok? res-file] (file/handle-file-upload! con auth-user file {:copyright copyright})]
+            (if ok?
+              (let [[ok? res] (add-file-to-place! con place-id {:file_id (:id res-file) 
+                                                                :priority (int priority)})]
                 (if ok?
-                  (let [[ok? res] (add-file-to-place! con place-id {:file_id (:id res-file)
-                                                                    :priority (int priority)})]
-                    (if ok?
-                      [true {:file res-file :place_file res}]
-                      [false res]))
-                  [false res-file]))
-              (catch Exception e
-                [false {:errors {:image (.toString e)} :-code 500}])))
+                  [true {:file res-file :place_file res}]
+                  [false res]))
+              [false res-file]))
           [false {:errors {:place ["The place with the specified ID doesn't exist."]} :-code 404}]))
       [false {:errors {:file ["Invalid file."]} :-code 422}])))
 

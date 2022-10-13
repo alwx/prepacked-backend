@@ -3,11 +3,19 @@
             [clojure.java.jdbc :as jdbc]
             [co.prepacked.database.interface-ns :as database]
             [co.prepacked.city.interface-ns :as city]
+            [co.prepacked.file.interface-ns :as file]
             [co.prepacked.place.interface-ns :as place]
             [co.prepacked.places-list.store :as store]))
 
-(defn places-lists [city-id]
-  (store/places-lists (database/db) city-id))
+(defn places-lists-with-all-dependencies [city-id]
+  (jdbc/with-db-transaction [con (database/db)]
+    (let [places-lists (store/places-lists con city-id)
+          files (->> (store/city-files con city-id)
+                     (group-by :places_list_id))
+          places-lists' (->> places-lists
+                       (mapv (fn [{:keys [id] :as places-list}]
+                               (assoc places-list :files (get files id [])))))]
+      [true places-lists'])))
 
 (defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
   (let [[_ places] (place/places-with-all-dependencies city_id id)]
@@ -111,5 +119,62 @@
             (store/delete-places-list-place! con city-places-list-id place-id)
             [true nil])
           [false {:errors {:other ["Cannot find the specified place in the place list."]} :-code 404}])
+        [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
+      [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
+
+(defn- add-file-to-places-list! [con places-list-id input]
+  (if (file/file-by-id con (:file_id input))
+    (let [input' (merge input {:places_list_id places-list-id})]
+      (if (store/find-places-list-file con places-list-id (:file-id input'))
+        [false {:errors {:places_list_file ["This file is already added to the specified list of places."]} :-code 400}]
+        (do
+          (store/insert-places-list-file! con input')
+          (if-let [places-list-file (store/find-places-list-file con places-list-id (:file_id input'))]
+            [true places-list-file]
+            [false {:errors {:other ["Cannot update the place's file in the database."]} :-code 500}]))))
+    [false {:errors {:file ["There is no file with the specified id."]} :-code 404}]))
+
+(defn handle-file-upload! [auth-user city-slug places-list-slug input]
+  (let [{:keys [copyright priority file]} input
+        {:keys [content-type]} file]
+    (if (file/content-type->supported-ext content-type)
+      (jdbc/with-db-transaction [con (database/db)]
+        (if-let [{city-id :id} (city/city-by-slug city-slug)]
+          (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
+            (let [[ok? res-file] (file/handle-file-upload! con auth-user file {:copyright copyright})]
+              (if ok?
+                (let [[ok? res] (add-file-to-places-list! con city-places-list-id {:file_id (:id res-file)
+                                                                                   :priority (int priority)})]
+                  (if ok?
+                    [true {:file res-file :places_list_file res}]
+                    [false res]))
+                [false res-file]))
+            [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
+          [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}]))
+      [false {:errors {:file ["Invalid file."]} :-code 422}])))
+
+(defn update-file-in-places-list! [city-slug places-list-slug file-id input]
+  (jdbc/with-db-transaction [con (database/db)]
+    (if-let [{city-id :id} (city/city-by-slug city-slug)]
+      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
+        (if-let [places-list-file (store/find-places-list-file con city-places-list-id file-id)]
+          (let [input' (merge places-list-file input)]
+            (store/update-places-list-file! con city-places-list-id file-id input')
+            (if-let [places-list-file (store/find-places-list-file con city-places-list-id file-id)]
+              [true places-list-file]
+              [false {:errors {:other ["Cannot update the list's file in the database."]} :-code 500}]))
+          [false {:errors {:other ["Cannot find the specified file for the place's list."]} :-code 404}])
+        [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
+      [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
+
+(defn delete-file-in-places-list! [city-slug places-list-slug file-id]
+  (jdbc/with-db-transaction [con (database/db)]
+    (if-let [{city-id :id} (city/city-by-slug city-slug)]
+      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
+        (if (store/find-places-list-file con city-places-list-id file-id)
+          (do
+            (store/delete-places-list-file! con city-places-list-id file-id)
+            [true nil])
+          [false {:errors {:other ["Cannot find the specified file for the place's list."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
       [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))

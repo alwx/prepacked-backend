@@ -19,7 +19,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: prepacked-password
 
-  prepacked_minio:
+  minio:
     image: minio/minio
     hostname: minio
     networks:

@@ -2,7 +2,7 @@
   (:require 
     [co.prepacked.static-page.core :as core]))
 
-(defn get-static-pages [city-id]
+(defn static-pages [city-id]
   (core/static-pages city-id))
 
 (defn add-static-page! [city-slug static-page-input]

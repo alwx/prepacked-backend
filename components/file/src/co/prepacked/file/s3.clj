@@ -24,7 +24,7 @@
 (defn- create-bucket [cred bucket-name]
   (s3/create-bucket cred bucket-name))
 
-(defn save [bytes filename]
+(defn put [bytes filename]
   (let [{:keys [bucket] :as config} (s3-config)
         cred (s3-credentials config)
         stream (java.io.ByteArrayInputStream. bytes)]
@@ -36,6 +36,11 @@
      :bucket-name bucket
      :input-stream stream
      :key filename)))
+
+(defn delete [filename]
+  (let [{:keys [bucket] :as config} (s3-config)
+        cred (s3-credentials config)]
+    (s3/delete-object cred :bucket-name bucket :key filename)))
 
 (defn s3-public-server-url []
   (:public-server-url (s3-config)))

@@ -2,18 +2,20 @@
   (:require
    [clojure.edn :as edn]
    [clojure.spec.alpha :as s]
-   [co.prepacked.place.interface-ns :as place]
-   [co.prepacked.place.spec :as place-spec]
-   [co.prepacked.feature.interface-ns :as feature]
-   [co.prepacked.feature.spec :as feature-spec]
-   [co.prepacked.places-list.interface-ns :as places-list]
-   [co.prepacked.places-list.spec :as places-list-spec]
-   [co.prepacked.navbar-item.interface-ns :as navbar-item]
-   [co.prepacked.navbar-item.spec :as navbar-item-spec]
-   [co.prepacked.static-page.interface-ns :as static-page]
-   [co.prepacked.static-page.spec :as static-page-spec]
    [co.prepacked.city.interface-ns :as city]
    [co.prepacked.env.interface-ns :as env]
+   [co.prepacked.feature.interface-ns :as feature]
+   [co.prepacked.feature.spec :as feature-spec]
+   [co.prepacked.file.interface-ns :as file]
+   [co.prepacked.file.spec :as file-spec]
+   [co.prepacked.navbar-item.interface-ns :as navbar-item]
+   [co.prepacked.navbar-item.spec :as navbar-item-spec]
+   [co.prepacked.place.interface-ns :as place]
+   [co.prepacked.place.spec :as place-spec]
+   [co.prepacked.places-list.interface-ns :as places-list]
+   [co.prepacked.places-list.spec :as places-list-spec]
+   [co.prepacked.static-page.interface-ns :as static-page]
+   [co.prepacked.static-page.spec :as static-page-spec]
    [co.prepacked.user.interface-ns :as user]
    [co.prepacked.user.spec :as user-spec]))
 
@@ -55,8 +57,8 @@
   (let [slug (-> req :params :slug)]
     (if-let [{:keys [id] :as city} (city/city-by-slug slug)]
       (let [city' (assoc city
-                         :places_lists (places-list/get-places-lists id)
-                         :static_pages (static-page/get-static-pages id)
+                         :places_lists (places-list/places-lists-with-all-dependencies id)
+                         :static_pages (static-page/static-pages id)
                          :navbar_items (navbar-item/navbar-items id))]
         (handle 200 {:city city'}))
       (handle 404 {:errors {:city ["Cannot find the city."]}}))))
@@ -145,13 +147,24 @@
         [_ res] (place/delete-feature-in-place! place-id feature-id)]
     (handle-result res)))
 
+(defn edit-file [req]
+  (let [file-id (-> req :params :file_id)
+        file-data (-> req :params :file)]
+    (if (s/valid? file-spec/update-file file-data)
+      (let [[_ res] (file/update-file! file-id file-data)]
+        (handle-result res))
+      (handle-invalid-spec))))
+
+(defn delete-file [req]
+  (let [file-id (-> req :params :file_id)
+        [_ res] (file/delete-file! file-id)]
+    (handle-result res)))
+
 (defn form-upload-place-file [req]
   ;; this one is special because it expects form data, not a JSON
-  (let [auth-user (-> req :auth-user)
-        place-id (-> req :params :place_id)
-        params (-> req 
-                   :params
-                   (update :priority parse-query-param))]
+  (let [place-id (-> req :params :place_id)
+        auth-user (-> req :auth-user)
+        params (-> req :params (update :priority parse-query-param))]
     (if (s/valid? place-spec/upload-file-for-place params)
       (let [[_ res] (place/handle-file-upload! auth-user place-id params)]
         (handle-result res))
@@ -221,6 +234,34 @@
         places-list-slug (-> req :params :places_list_slug)
         place-id (-> req :params :place_id)
         [_ res] (places-list/delete-place-in-places-list! slug places-list-slug place-id)]
+    (handle-result res)))
+
+(defn form-upload-places-list-file [req]
+  ;; this one is special because it expects form data, not a JSON
+  (let [slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)
+        auth-user (-> req :auth-user)
+        params (-> req :params (update :priority parse-query-param))]
+    (if (s/valid? places-list-spec/upload-file-for-places-list params)
+      (let [[_ res] (places-list/handle-file-upload! auth-user slug places-list-slug params)]
+        (handle-result res))
+      (handle-invalid-spec))))
+
+(defn edit-places-list-file [req]
+  (let [slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)
+        file-id (-> req :params :file_id)
+        place-file (-> req :params :place_file)]
+    (if (s/valid? place-spec/update-file-in-place place-file)
+      (let [[_ res] (places-list/update-file-in-places-list! slug places-list-slug file-id place-file)]
+        (handle-result res))
+      (handle-invalid-spec))))
+
+(defn delete-places-list-file [req]
+  (let [slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)
+        file-id (-> req :params :file_id)
+        [_ res] (places-list/delete-file-in-places-list! slug places-list-slug file-id)]
     (handle-result res)))
 
 (defn add-static-page [req]

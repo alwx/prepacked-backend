@@ -25,3 +25,13 @@
 (def update-place-in-places-list
   (ds/spec {:name :core/update-place-in-places-list
             :spec {:comment string?}}))
+
+(def upload-file-for-places-list
+  (ds/spec {:name :core/upload-file-for-places-list
+            :spec {:priority int?
+                   :copyright string?
+                   :file any?}}))
+
+(def update-file-in-places-list
+  (ds/spec {:name :core/update-file-in-places-list
+            :spec {:priority int?}}))

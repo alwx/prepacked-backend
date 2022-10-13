@@ -119,6 +119,14 @@
      [:updated_at :datetime]])
    "CREATE UNIQUE INDEX idx_places_list_place ON places_list_place (places_list_id, place_id)"])
 
+(def places-list-file
+  [(jdbc/create-table-ddl
+    :places_list_file
+    [[:places_list_id :integer "references places_list(id)"]
+     [:file_id :integer "references file(id)"]
+     [:priority :integer "default 0"]])
+   "CREATE UNIQUE INDEX idx_places_list_file ON places_list_file (places_list_id, file_id)"])
+
 (def static-page
   [(jdbc/create-table-ddl
     :static_page
@@ -154,6 +162,7 @@
            place-file
            places-list
            places-list-place
+           places-list-file
            static-page
            navbar-item)))
 
@@ -168,6 +177,7 @@
     (jdbc/drop-table-ddl :place_feature)
     (jdbc/drop-table-ddl :places_list)
     (jdbc/drop-table-ddl :places_list_place)
+    (jdbc/drop-table-ddl :places_list_file)
     (jdbc/drop-table-ddl :static_page)
     (jdbc/drop-table-ddl :navbar_item)]))
 
@@ -201,6 +211,7 @@
                                      :plae_file
                                      :places_list
                                      :places_list_place
+                                     :places_list_file
                                      :static_page
                                      :navbar_item])
         valid-schema {:user (first user)
@@ -212,6 +223,7 @@
                       :place_file (first place-file)
                       :places_list (first places-list)
                       :places_list_place (first places-list-place)
+                      :places_list_file (first places-list-file)
                       :static_page (first static-page)
                       :navbar_item (first navbar-item)}]
     (if (= valid-schema current-schema)

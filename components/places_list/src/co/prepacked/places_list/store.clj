@@ -11,6 +11,16 @@
         results (jdbc/query con (sql/format query) {:identifiers identity})]
     results))
 
+(defn city-files [con city-id]
+  (let [query {:select [:places_list_file.* :file.server_url :file.link]
+               :from [[:places_list_file]]
+               :join [[:file] [:= :file.id :places_list_file.file_id]
+                      [:places_list] [:= :places_list.id :places_list_file.places_list_id]]
+               :where [:= :places_list.city_id city-id]
+               :order-by [[:places_list_file.priority :desc]]}
+        results (jdbc/query con (sql/format query))]
+    results))
+
 (defn find-by [con city-id key value]
   (let [query {:select [:*]
                :from [:places_list]
@@ -62,4 +72,31 @@
                :where [:and
                        [:= :places_list_id places-list-id]
                        [:= :place-id place-id]]}]
+    (jdbc/execute! con (sql/format query))))
+
+(defn find-places-list-file [con places-list-id file-id]
+  (let [query {:select [:*]
+               :from [:places_list_file]
+               :where [:and
+                       [:= :places_list_id places-list-id]
+                       [:= :file_id file-id]]}
+        results (jdbc/query con (sql/format query))]
+    (first results)))
+
+(defn insert-places-list-file! [con input]
+  (jdbc/insert! con :places_list_file input))
+
+(defn update-places-list-file! [con places-list-id file-id input]
+  (let [query {:update :places_list_file
+               :set input
+               :where [:and
+                       [:= :places_list_id places-list-id]
+                       [:= :file_id file-id]]}]
+    (jdbc/execute! con (sql/format query))))
+
+(defn delete-places-list-file! [con places-list-id file-id]
+  (let [query {:delete-from :places_list_file
+               :where [:and
+                       [:= :places_list_id places-list-id]
+                       [:= :file_id file-id]]}]
     (jdbc/execute! con (sql/format query))))
