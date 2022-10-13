@@ -10,6 +10,7 @@
 (def ^:private email-regex #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$")
 (def ^:private uri-regex #"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)")
 (def ^:private slug-regex #"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+(def ^:private uuid-regex #"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
 (def non-empty-string?
   (st/spec {:spec        (s/and string? #(not (str/blank? %)))
@@ -58,3 +59,8 @@
   (st/spec {:spec        (s/and string? #(<= 8 (count %)))
             :type        :string
             :description "A string spec with more than or equal to 8 characters."}))
+
+(def uuid?
+  (st/spec {:spec (s/and string? #(re-matches uuid-regex %))
+            :type :string
+            :description "A string spec with UUID."}))

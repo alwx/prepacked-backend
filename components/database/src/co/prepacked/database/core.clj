@@ -1,31 +1,26 @@
 (ns co.prepacked.database.core
   (:require
-   [clojure.java.io :as io]
    [ragtime.jdbc]
    [ragtime.core]
    [ragtime.reporter]
    [ragtime.strategy]
-   [ragtime.repl]
    [co.prepacked.env.interface-ns :as env]
    [co.prepacked.log.interface-ns :as log]))
 
-(defn db-path []
-  (or (env/get-var :database)
+(defonce db-data
+  (or (env/get-var :db)
       (do
-        (log/warn "`:database` needs to be added to `env.edn`!")
+        (log/warn "`:db` needs to be added to `env.edn`!")
         (System/exit 1))))
 
-(defn db
-  ([path]
-   {:classname   "org.sqlite.JDBC"
-    :subprotocol "sqlite"
-    :subname     path})
-  ([]
-   (db (db-path))))
-
-(defn db-exists? []
-  (let [db-file (io/file (db-path))]
-    (.exists db-file)))
+(defn db []
+  (let [{:keys [dbname host port user password]} db-data]
+    {:dbtype "postgresql"
+     :dbname dbname
+     :host host
+     :port port
+     :user user
+     :password password}))
 
 (defn run-migrations [db]
   (let [datastore (ragtime.jdbc/sql-database db)

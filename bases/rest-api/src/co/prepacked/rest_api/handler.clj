@@ -252,7 +252,7 @@
         places-list-slug (-> req :params :places_list_slug)
         file-id (-> req :params :file_id)
         place-file (-> req :params :place_file)]
-    (if (s/valid? place-spec/update-file-in-place place-file)
+    (if (s/valid? places-list-spec/update-file-in-places-list place-file)
       (let [[_ res] (places-list/update-file-in-places-list! slug places-list-slug file-id place-file)]
         (handle-result res))
       (handle-invalid-spec))))

@@ -1,0 +1,4 @@
+{:up   ["INSERT INTO city (slug, name, country_code, lat, lon) VALUES ('any', 'Any', '', 0, 0);"
+        "INSERT INTO city (slug, name, country_code, lat, lon) VALUES ('vienna', 'Vienna', 'at', 48.210033, 16.363449);"]
+ :down ["DELETE FROM city WHERE slug = 'any';"
+        "DELETE FROM city WHERE slug = 'vienna';"]}

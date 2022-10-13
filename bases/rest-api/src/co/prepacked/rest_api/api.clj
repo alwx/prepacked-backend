@@ -95,16 +95,8 @@
   (try
     (log/init)
     (let [db (database/db)]
-      (if (database/db-exists?)
-        (do
-          (log/info "Database exists.")
-          (database/run-migrations db)
-          (database/check-sqlite-schema db))
-        (do
-          (log/info "Generating database.")
-          (database/generate-db db)
-          (database/run-migrations db)
-          (log/info "Database generated."))))
+      (database/init-database db)
+      (database/run-migrations db))
     (log/info "Initialized server.")
     (catch Exception e
       (log/error e "Could not start server."))))

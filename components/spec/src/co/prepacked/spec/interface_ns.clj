@@ -13,3 +13,5 @@
 (def slug? core/slug?)
 
 (def password? core/password?)
+
+(def uuid? core/uuid?)

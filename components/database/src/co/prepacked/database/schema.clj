@@ -1,33 +1,32 @@
 (ns co.prepacked.database.schema
   (:require
    [clojure.java.jdbc :as jdbc]
-   [clojure.set]
-   [honey.sql :as sql]
-   [co.prepacked.log.interface-ns :as log]))
+   [clojure.set]))
 
-(def user
+(def initial
+  ["CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"])
+
+(def app-user
   [(jdbc/create-table-ddl
-    :user
-    [[:id :integer :primary :key :autoincrement]
+    :app_user
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
      [:email :text :unique]
      [:username :text :unique]
      [:password :text]
-     [:created_at :datetime]
-     [:updated_at :datetime]]
-    {:entities identity})])
+     [:created_at :time]
+     [:updated_at :time]]
+    {:conditional? true})])
 
 (def city
   [(jdbc/create-table-ddl
     :city
-    [[:id :integer :primary :key :autoincrement]
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
      [:slug :text :unique]
      [:name :text]
      [:country_code :text]
      [:lat :real]
      [:lon :real]]
-    {:entities identity})
-   "INSERT INTO city (slug, name, country_code) VALUES ('any', 'Any', '', 0, 0)"
-   "INSERT INTO city (slug, name, country_code) VALUES ('vienna', 'Vienna', 'at', 48.210033, 16.363449)"])
+    {:conditional? true})])
 
 (def feature
   [(jdbc/create-table-ddl
@@ -35,33 +34,29 @@
     [[:id :text :primary :key]
      [:title :text]
      [:icon :text]
-     [:priority :integer "default 0"]])
-   "INSERT INTO feature (id, title, icon) VALUES ('location', 'Location', 'map', 100)"
-   "INSERT INTO feature (id, title, icon) VALUES ('price', 'Price', 'euro-sign', 99)"
-   "INSERT INTO feature (id, title, icon) VALUES ('wifi', 'WiFi', 'wifi', 98)"
-   "INSERT INTO feature (id, title, icon) VALUES ('laptop-policy', 'Laptop Policy', 97, 'laptop')"
-   "INSERT INTO feature (id, title, icon) VALUES ('crowd', 'Crowd', 'users', 96)"])
+     [:priority :integer "DEFAULT 0 NOT NULL"]]
+    {:conditional? true})])
 
 (def file
   [(jdbc/create-table-ddl
     :file
-    [[:id :integer :primary :key :autoincrement]
-     [:user_id :integer "references user(id)"]
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
+     [:user_id :uuid "REFERENCES app_user(id)"]
      [:server_url :text]
      [:link :text]
      [:copyright :text]
-     [:created_at :datetime]]
-    {:entities identity})])
+     [:created_at :time]]
+    {:conditional? true})])
 
 (def place
   [(jdbc/create-table-ddl
     :place
-    [[:id :integer :primary :key :autoincrement]
-     [:user_id :integer "references user(id)"]
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
+     [:user_id :uuid "REFERENCES app_user(id)"]
      [:address :text]
      [:title :text]
      [:description :text]
-     [:priority :integer "default 0"]
+     [:priority :integer "DEFAULT 0 NOT NULL"]
      [:osm_place_id :integer]
      [:osm_lat :real]
      [:osm_lon :real]
@@ -74,86 +69,92 @@
      [:osm_road :text]
      [:osm_suburb :text]
      [:osm_display_name :text]
-     [:created_at :datetime]
-     [:updated_at :datetime]])])
+     [:created_at :time]
+     [:updated_at :time]]
+    {:conditional? true})])
 
 (def place-feature
   [(jdbc/create-table-ddl
     :place_feature
-    [[:place_id :integer "references place(id)"]
-     [:feature_id :text "references feature(id)"]
-     [:value :text]])
-   "CREATE UNIQUE INDEX idx_place_feature ON place_feature (place_id, feature_id)"])
+    [[:place_id :uuid "REFERENCES place(id)"]
+     [:feature_id :text "REFERENCES feature(id)"]
+     [:value :text]]
+    {:conditional? true})
+   "CREATE UNIQUE INDEX IF NOT EXISTS idx_place_feature ON place_feature (place_id, feature_id)"])
 
 (def place-file
   [(jdbc/create-table-ddl
     :place_file
-    [[:place_id :integer "references place(id)"]
-     [:file_id :integer "references file(id)"]
-     [:priority :integer "default 0"]])
-   "CREATE UNIQUE INDEX idx_place_file ON place_file (place_id, file_id)"])
+    [[:place_id :uuid "REFERENCES place(id)"]
+     [:file_id :uuid "REFERENCES file(id)"]
+     [:priority :integer "DEFAULT 0 NOT NULL"]]
+    {:conditional? true})
+   "CREATE UNIQUE INDEX IF NOT EXISTS idx_place_file ON place_file (place_id, file_id)"])
 
 (def places-list
   [(jdbc/create-table-ddl
     :places_list
-    [[:id :integer :primary :key :autoincrement]
-     [:user_id :integer "references user(id)"]
-     [:city_id :integer "references city(id)"]
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
+     [:user_id :uuid "REFERENCES app_user(id)"]
+     [:city_id :uuid "REFERENCES city(id)"]
      [:slug :text]
      [:title :text]
      [:description :text]
-     [:priority :integer "default 0"]
-     [:created_at :datetime]
-     [:updated_at :datetime]]
-    {:entities identity})
-   "CREATE UNIQUE INDEX idx_places_list_city_id_slug ON places_list (city_id, slug)"])
+     [:priority :integer "DEFAULT 0 NOT NULL"]
+     [:created_at :time]
+     [:updated_at :time]]
+    {:conditional? true})
+   "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_city_id_slug ON places_list (city_id, slug)"])
 
 (def places-list-place
   [(jdbc/create-table-ddl
     :places_list_place
-    [[:places_list_id :integer "references places_list(id)"]
-     [:place_id :integer "references place(id)"]
-     [:user_id :integer "references user(id)"]
+    [[:places_list_id :uuid "REFERENCES places_list(id)"]
+     [:place_id :uuid "REFERENCES place(id)"]
+     [:user_id :uuid "REFERENCES app_user(id)"]
      [:comment :text]
-     [:created_at :datetime]
-     [:updated_at :datetime]])
-   "CREATE UNIQUE INDEX idx_places_list_place ON places_list_place (places_list_id, place_id)"])
+     [:created_at :time]
+     [:updated_at :time]]
+    {:conditional? true})
+   "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_place ON places_list_place (places_list_id, place_id)"])
 
 (def places-list-file
   [(jdbc/create-table-ddl
     :places_list_file
-    [[:places_list_id :integer "references places_list(id)"]
-     [:file_id :integer "references file(id)"]
-     [:priority :integer "default 0"]])
-   "CREATE UNIQUE INDEX idx_places_list_file ON places_list_file (places_list_id, file_id)"])
+    [[:places_list_id :uuid "REFERENCES places_list(id)"]
+     [:file_id :uuid "REFERENCES file(id)"]
+     [:priority :integer "DEFAULT 0 NOT NULL"]]
+    {:conditional? true})
+   "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_file ON places_list_file (places_list_id, file_id)"])
 
 (def static-page
   [(jdbc/create-table-ddl
     :static_page
-    [[:id :integer :primary :key :autoincrement]
-     [:city_id :integer "references city(id)"]
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
+     [:city_id :uuid "REFERENCES city(id)"]
      [:slug :text]
      [:title :text]
      [:content :text]
-     [:created_at :datetime]
-     [:updated_at :datetime]]
-    {:entities identity})
-   "CREATE UNIQUE INDEX idx_static_page_city_id_slug ON static_page (city_id, slug)"])
+     [:created_at :time]
+     [:updated_at :time]]
+    {:conditional? true})
+   "CREATE UNIQUE INDEX IF NOT EXISTS idx_static_page_city_id_slug ON static_page (city_id, slug)"])
 
 (def navbar-item
   [(jdbc/create-table-ddl
     :navbar_item
-    [[:id :integer :primary :key :autoincrement]
-     [:city_id :integer "references city(id)"]
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
+     [:city_id :uuid "REFERENCES city(id)"]
      [:title :text]
-     [:priority :integer "default 0"]
+     [:priority :integer "DEFAULT 0 NOT NULL"]
      [:link :text]]
-    {:entities identity})])
+    {:conditional? true})])
 
-(defn generate-db [db]
+(defn init-database [db]
   (jdbc/db-do-commands
    db
-   (concat user
+   (concat initial
+           app-user
            city
            feature
            file
@@ -165,55 +166,3 @@
            places-list-file
            static-page
            navbar-item)))
-
-(defn- table->schema-item [{:keys [tbl_name sql]}]
-  [(keyword tbl_name) sql])
-
-(defn- map-difference [m1 m2]
-  (let [ks1 (set (keys m1))
-        ks2 (set (keys m2))
-        ks1-ks2 (clojure.set/difference ks1 ks2)
-        ks2-ks1 (clojure.set/difference ks2 ks1)
-        ks1*ks2 (clojure.set/intersection ks1 ks2)]
-    (merge (select-keys m1 ks1-ks2)
-           (select-keys m2 ks2-ks1)
-           (select-keys m1
-                        (remove (fn [k] (= (m1 k) (m2 k)))
-                                ks1*ks2)))))
-
-(defn check-sqlite-schema [db]
-  (let [query {:select [:*]
-               :from   [:sqlite_master]
-               :where  [:= :type "table"]}
-        tables (jdbc/query db (sql/format query) {:identifiers identity})
-        current-schema (select-keys (into {} (map table->schema-item tables))
-                                    [:user
-                                     :city
-                                     :feature
-                                     :file
-                                     :place
-                                     :place_feature
-                                     :plae_file
-                                     :places_list
-                                     :places_list_place
-                                     :places_list_file
-                                     :static_page
-                                     :navbar_item])
-        valid-schema {:user (first user)
-                      :city (first city)
-                      :feature (first feature)
-                      :file (first file)
-                      :place (first place)
-                      :place_feature (first place-feature)
-                      :place_file (first place-file)
-                      :places_list (first places-list)
-                      :places_list_place (first places-list-place)
-                      :places_list_file (first places-list-file)
-                      :static_page (first static-page)
-                      :navbar_item (first navbar-item)}]
-    (if (= valid-schema current-schema)
-      true
-      (do
-        (log/warn "There are some differences between the expected and the actual db schema.")
-        (log/warn (map-difference valid-schema current-schema))
-        false))))

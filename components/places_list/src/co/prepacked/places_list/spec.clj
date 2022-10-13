@@ -19,7 +19,7 @@
 
 (def add-place-to-places-list
   (ds/spec {:name :core/add-place-to-places-list
-            :spec {:place_id pos-int?
+            :spec {:place_id spec/uuid?
                    :comment string?}}))
 
 (def update-place-in-places-list

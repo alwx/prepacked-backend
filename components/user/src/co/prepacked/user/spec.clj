@@ -4,11 +4,6 @@
     [spec-tools.core :as st]
     [spec-tools.data-spec :as ds]))
 
-(def id
-  (st/spec {:spec        pos-int?
-            :type        :long
-            :description "A long spec that defines a user id which is a positive integer"}))
-
 (def login
   (ds/spec {:name :core/login
             :spec {:email    spec/email?
@@ -28,7 +23,7 @@
             :keys-default ds/opt}))
 
 (def user-base
-  {:id             id
+  {:id             spec/uuid?
    :email          spec/email?
    :username       spec/username?})
 

@@ -5,7 +5,7 @@
 
 (defn find-by [con key value]
   (let [query {:select [:*]
-               :from   [:user]
+               :from   [:app_user]
                :where  [:= key value]}
         results (jdbc/query con (sql/format query))]
     (first results)))
@@ -20,10 +20,10 @@
   (find-by con :id id))
 
 (defn insert-user! [con user-input]
-  (jdbc/insert! con :user user-input))
+  (jdbc/insert! con :app_user user-input))
 
 (defn update-user! [con id user-input]
-  (let [query {:update :user
+  (let [query {:update :app_user
                :set    user-input
                :where  [:= :id id]}]
     (jdbc/execute! con (sql/format query))))
