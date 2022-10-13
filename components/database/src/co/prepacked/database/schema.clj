@@ -166,21 +166,6 @@
            static-page
            navbar-item)))
 
-(defn drop-db [db]
-  (jdbc/db-do-commands
-   db
-   [(jdbc/drop-table-ddl :user)
-    (jdbc/drop-table-ddl :city)
-    (jdbc/drop-table-ddl :feature)
-    (jdbc/drop-table-ddl :file)
-    (jdbc/drop-table-ddl :place)
-    (jdbc/drop-table-ddl :place_feature)
-    (jdbc/drop-table-ddl :places_list)
-    (jdbc/drop-table-ddl :places_list_place)
-    (jdbc/drop-table-ddl :places_list_file)
-    (jdbc/drop-table-ddl :static_page)
-    (jdbc/drop-table-ddl :navbar_item)]))
-
 (defn- table->schema-item [{:keys [tbl_name sql]}]
   [(keyword tbl_name) sql])
 

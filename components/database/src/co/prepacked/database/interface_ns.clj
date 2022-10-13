@@ -15,8 +15,8 @@
 (defn generate-db [db]
   (schema/generate-db db))
 
-(defn drop-db [db]
-  (schema/drop-db db))
+(defn run-migrations [db]
+  (core/run-migrations db))
 
 (defn check-sqlite-schema [db]
   (schema/check-sqlite-schema db))

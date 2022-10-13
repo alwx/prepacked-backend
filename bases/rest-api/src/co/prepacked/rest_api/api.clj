@@ -98,10 +98,12 @@
       (if (database/db-exists?)
         (do
           (log/info "Database exists.")
+          (database/run-migrations db)
           (database/check-sqlite-schema db))
         (do
           (log/info "Generating database.")
           (database/generate-db db)
+          (database/run-migrations db)
           (log/info "Database generated."))))
     (log/info "Initialized server.")
     (catch Exception e
