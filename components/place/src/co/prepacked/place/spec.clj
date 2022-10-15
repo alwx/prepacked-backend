@@ -24,8 +24,7 @@
 
 (def update-feature-in-place
   (ds/spec {:name :core/update-feature-in-place
-            :spec {:feature_id spec/slug?
-                   :value string?}}))
+            :spec {:value string?}}))
 
 (def upload-file-for-place
   (ds/spec {:name :core/upload-file-for-place

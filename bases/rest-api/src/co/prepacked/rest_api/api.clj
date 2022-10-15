@@ -1,105 +1,253 @@
 (ns co.prepacked.rest-api.api
-  (:require
-   [co.prepacked.database.interface-ns :as database]
-   [co.prepacked.rest-api.handler :as handler]
-   [co.prepacked.rest-api.middleware :as middleware]
-   [co.prepacked.log.interface-ns :as log]
-   [compojure.core :refer [routes wrap-routes defroutes GET POST PUT DELETE ANY OPTIONS]]
-   [ring.logger.timbre]
-   [ring.middleware.json]
-   [ring.middleware.keyword-params]
-   [ring.middleware.multipart-params]
-   [ring.middleware.nested-params]
-   [ring.middleware.params]))
+  (:require [muuntaja.core]
+            [reitit.ring :as ring]
+            [reitit.coercion.spec]
+            [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
+            [reitit.ring.coercion :as coercion]
+            [reitit.dev.pretty :as pretty]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring.middleware.exception :as exception]
+            [reitit.ring.middleware.multipart :as multipart]
+            [reitit.ring.middleware.parameters :as parameters]
+            [ring.logger.timbre]
+            [co.prepacked.rest-api.handler :as handler]
+            [co.prepacked.rest-api.middleware :as middleware]
+            [co.prepacked.feature.spec :as feature-spec]
+            [co.prepacked.file.spec :as file-spec]
+            [co.prepacked.navbar-item.spec :as navbar-item-spec]
+            [co.prepacked.place.spec :as place-spec]
+            [co.prepacked.places-list.spec :as places-list-spec]
+            [co.prepacked.static-page.spec :as static-page-spec]
+            [co.prepacked.user.spec :as user-spec]
+            [co.prepacked.spec.interface-ns :as spec]))
 
-(defroutes public-routes
-  (OPTIONS "/**" [] handler/options)
-  (GET     "/api/health" [] handler/health)
-  (GET     "/api/cities" [] handler/cities)
-  (GET     "/api/cities/:slug" [] handler/city-with-all-dependencies)
-  (GET     "/api/cities/:slug/places-lists/:places_list_slug" [] handler/places-list-with-all-dependencies)
-  (POST    "/api/users/login" [] handler/login)
-  (POST    "/api/users" [] handler/register))
+(def api-routes
+  ["/api"
 
-(defroutes private-routes
-  (POST    "/api/features" [] handler/add-feature)
-  (PUT     "/api/features/:feature_id" [] handler/edit-feature)
-  (DELETE  "/api/features/:feature_id" [] handler/delete-feature)
+   ["/health"
+    {:swagger {:tags ["health"]}
+     :get {:summary "current state of the API"
+           :responses {200 {:body {:environment string?}}}
+           :handler handler/health}}]
 
-  (POST    "/api/places" [] handler/add-place)
-  (PUT     "/api/places/:place_id" [] handler/edit-place)
-  (DELETE  "/api/places/:place_id" [] handler/delete-place)
+   ["/users" {:swagger {:tags ["users"]}}
+    [""
+     {:post {:summary "create/register a new user"
+             :parameters {:body user-spec/register}
+             :handler handler/register}}]
+    ["/login"
+     {:post {:summary "performs a login"
+             :parameters {:body user-spec/login}
+             :handler handler/login}}]]
 
-  (POST    "/api/places/:place_id/features" [] handler/add-place-feature)
-  (PUT     "/api/places/:place_id/features/:feature_id" [] handler/edit-place-feature)
-  (DELETE  "/api/places/:place_id/features/:feature_id" [] handler/delete-place-feature)
+   ["/cities" {:swagger {:tags ["cities"]}}
+    [""
+     {:get {:summary "gets all cities"
+            :handler handler/cities}}]
+    ["/:slug"
+     [""
+      {:get {:summary "detailed information about a specific city"
+             :parameters {:path {:slug spec/slug?}}
+             :handler handler/city-with-all-dependencies}}]
+     ["/places-lists"
+      [""
+       {:post {:summary "add a places list"
+               :parameters {:body places-list-spec/add-places-list
+                            :header {:authorization string?}}
+               :handler handler/add-places-list}}]
+      ["/:places_list_slug"
+       [""
+        {:parameters {:path {:slug spec/slug?
+                             :places_list_slug spec/slug?}}
+         :get {:summary "detailed information about a specific list of places within a city"
+               :handler handler/places-list-with-all-dependencies}
+         :put {:summary "update a places list"
+               :parameters {:body places-list-spec/update-places-list
+                            :header {:authorization string?}}
+               :handler handler/edit-places-list}
+         :delete {:summary "delete a places list"
+                  :parameters {:header {:authorization string?}}
+                  :handler handler/delete-places-list}}]
+       ["/places"
+        [""
+         {:parameters {:path {:slug spec/slug?
+                              :places_list_slug spec/slug?}
+                       :header {:authorization string?}}
+          :post {:summary "add a place to a specified list of places"
+                 :parameters {:body places-list-spec/add-place-to-places-list}
+                 :handler handler/add-places-list-place}}]
+        ["/:place_id"
+         {:parameters {:path {:slug spec/slug?
+                              :places_list_slug spec/slug?
+                              :place_id spec/uuid?}
+                       :header {:authorization string?}}
+          :put {:summary "update a place in a specified list of places"
+                :parameters {:body places-list-spec/update-place-in-places-list}
+                :handler handler/edit-places-list-place}
+          :delete {:summary "deletes a place from a specified list of places"
+                   :handler handler/delete-places-list-place}}]]
+       ["/files"
+        [""
+         {:parameters {:path {:slug spec/slug?
+                              :places_list_slug spec/slug?}
+                       :header {:authorization string?}}
+          :post {:summary "add a file (e.g. an image) to a specified list of places"
+                 :parameters {:body places-list-spec/upload-file-for-places-list}
+                 :handler handler/form-upload-places-list-file}}]
+        ["/:file_id"
+         {:parameters {:path {:slug spec/slug?
+                              :places_list_slug spec/slug?
+                              :file_id spec/uuid?}
+                       :header {:authorization string?}}
+          :put {:summary "update a file in a specified list of places"
+                :parameters {:body places-list-spec/update-file-in-places-list}
+                :handler handler/edit-places-list-file}
+          :delete {:summary "deletes a file from a specified list of places"
+                   :handler handler/delete-places-list-file}}]]]]
 
-  (PUT     "/api/files/:file_id" [] handler/edit-file)
-  (DELETE  "/api/files/:file_id" [] handler/delete-file)
+     ["/static-pages"
+      [""
+       {:post {:summary "add a static page"
+               :parameters {:body static-page-spec/add-static-page
+                            :header {:authorization string?}}
+               :handler handler/add-static-page}}]
+      ["/:static_page_slug"
+       {:parameters {:path {:slug spec/slug?
+                            :static_page_slug spec/slug?}
+                     :header {:authorization string?}}
+        :put {:summary "update a static page"
+              :parameters {:body static-page-spec/update-static-page}
+              :handler handler/edit-static-page}
+        :delete {:summary "delete a static page"
+                 :handler handler/delete-static-page}}]]
+     
+     ["/navbar-items"
+      [""
+       {:post {:summary "add a navbar item"
+               :parameters {:body navbar-item-spec/add-navbar-item
+                            :header {:authorization string?}}
+               :handler handler/add-navbar-item}}]
+      ["/:navbar_item_id"
+       {:parameters {:path {:slug spec/slug?
+                            :navbar_item_id spec/uuid?}
+                     :header {:authorization string?}}
+        :put {:summary "update a navbar item"
+              :parameters {:body navbar-item-spec/update-navbar-item}
+              :handler handler/edit-navbar-item}
+        :delete {:summary "delete a navbar item"
+                 :handler handler/delete-navbar-item}}]]]]
 
-  (POST    "/api/places/:place_id/files" [] handler/form-upload-place-file)
-  (PUT     "/api/places/:place_id/files/:file_id" [] handler/edit-place-file)
-  (DELETE  "/api/places/:place_id/files/:file_id" [] handler/delete-place-file)
+   ["/features" {:middleware [middleware/wrap-authorization]
+                 :parameters {:header {:authorization string?}}
+                 :swagger {:tags ["features"]}}
+    [""
+     {:post {:summary "create a new feature"
+             :parameters {:body feature-spec/add-feature}
+             :handler handler/add-feature}}]
+    ["/:feature_id"
+     {:put {:summary "update a feature"
+            :parameters {:path {:feature_id spec/slug?}
+                         :body feature-spec/update-feature}
+            :handler handler/edit-feature}
+      :delete {:summary "delete a feature"
+               :parameters {:path {:feature_id spec/slug?}}
+               :handler handler/delete-feature}}]]
 
-  (POST    "/api/cities/:slug/places-lists" [] handler/add-places-list)
-  (PUT     "/api/cities/:slug/places-lists/:places_list_slug" [] handler/edit-places-list)
-  (DELETE  "/api/cities/:slug/places-lists/:places_list_slug" [] handler/delete-places-list)
+   ["/places" {:middleware [middleware/wrap-authorization]
+               :parameters {:header {:authorization string?}}
+               :swagger {:tags ["places"]}}
+    [""
+     {:post {:summary "create a new place"
+             :parameters {:body place-spec/add-place}
+             :handler handler/add-place}}]
+    ["/:place_id"
+     {:parameters {:path {:place_id spec/uuid?}}
+      :put {:summary "update a place"
+            :parameters {:body place-spec/update-place}
+            :handler handler/edit-place}
+      :delete {:summary "delete a place"
+               :handler handler/delete-place}}]
 
-  (POST    "/api/cities/:slug/places-lists/:places_list_slug/places" [] handler/add-places-list-place)
-  (PUT     "/api/cities/:slug/places-lists/:places_list_slug/places/:place_id" [] handler/edit-places-list-place)
-  (DELETE  "/api/cities/:slug/places-lists/:places_list_slug/places/:place_id" [] handler/delete-places-list-place)
+    ["/:place_id/features"
+     [""
+      {:parameters {:path {:place_id spec/uuid?}}
+       :post {:summary "add a feature to a place"
+              :parameters {:body place-spec/add-feature-to-place}
+              :handler handler/add-place-feature}}]
+     ["/:feature_id"
+      {:parameters {:path {:place_id spec/uuid?
+                           :feature_id spec/slug?}}
+       :put {:summary "update a feature in a place"
+             :parameters {:body place-spec/update-feature-in-place}
+             :handler handler/edit-place-feature}
+       :delete {:summary "delete a feature from a place"
+                :handler handler/delete-place-feature}}]]
 
-  (POST    "/api/cities/:slug/places-lists/:places_list_slug/files" [] handler/form-upload-places-list-file)
-  (PUT     "/api/cities/:slug/places-lists/:places_list_slug/files/:file_id" [] handler/edit-places-list-file)
-  (DELETE  "/api/cities/:slug/places-lists/:places_list_slug/files/:file_id" [] handler/delete-places-list-file)
+    ["/:place_id/files"
+     [""
+      {:parameters {:path {:place_id spec/uuid?}}
+       :post {:summary "add a file (e.g. an image) to a place"
+              :parameters {:body place-spec/upload-file-for-place
+                           :multipart {:file multipart/temp-file-part}}
+              :handler handler/form-upload-place-file}}]
+     ["/:file_id"
+      {:parameters {:path {:place_id spec/uuid?
+                           :file_id spec/uuid?}}
+       :put {:summary "update a file in a place"
+             :parameters {:body place-spec/update-file-in-place}
+             :handler handler/edit-place-file}
+       :delete {:summary "delete a file from a place"
+                :handler handler/delete-place-file}}]]]
 
-  (POST    "/api/cities/:slug/static-pages" [] handler/add-static-page)
-  (PUT     "/api/cities/:slug/static-pages/:static_page_slug" [] handler/edit-static-page)
-  (DELETE  "/api/cities/:slug/static-pages/:static_page_slug" [] handler/delete-static-page)
-
-  (POST    "/api/cities/:slug/navbar-items" [] handler/add-navbar-item)
-  (PUT     "/api/cities/:slug/navbar-items/:navbar_item_id" [] handler/edit-navbar-item)
-  (DELETE  "/api/cities/:slug/navbar-items/:navbar_item_id" [] handler/delete-navbar-item)
-
-  (GET     "/api/user" [] handler/current-user)
-  (PUT     "/api/user" [] handler/update-user))
-
-(defroutes other-routes
-  (ANY     "/**" [] handler/other))
-
-(def ^:private app-routes
-  (routes
-   (->
-    private-routes
-    (wrap-routes middleware/wrap-authorization)
-    (wrap-routes middleware/wrap-auth-user))
-   (->
-    public-routes
-    (wrap-routes middleware/wrap-auth-user))
-   other-routes))
+   ["/files" {:middleware [middleware/wrap-authorization]
+              :parameters {:header {:authorization string?}}
+              :swagger {:tags ["files"]}}
+    ["/:file_id"
+     {:parameters {:path {:file_id spec/uuid?}}
+      :put {:summary "update some file information"
+            :parameters {:body file-spec/update-file}
+            :handler handler/edit-file}
+      :delete {:summary "delete a file"
+               :handler handler/delete-file}}]]
+   
+   ["/user" {:middleware [middleware/wrap-authorization]
+             :parameters {:header {:authorization string?}}
+             :swagger {:tags ["user"]}}
+    ["" 
+     {:get {:summary "get current user info"
+            :handler handler/current-user}
+      :put {:summary "update current user"
+            :parameters {:body user-spec/update-user}
+            :handler handler/update-user}}]]])
 
 (def app
-  (->
-   app-routes
-   ring.logger.timbre/wrap-with-logger
-   ring.middleware.keyword-params/wrap-keyword-params
-   ring.middleware.params/wrap-params
-   ring.middleware.multipart-params/wrap-multipart-params
-   ring.middleware.json/wrap-json-params
-   ring.middleware.nested-params/wrap-nested-params
-   middleware/wrap-exceptions
-   ring.middleware.json/wrap-json-response
-   middleware/wrap-cors))
-
-(defn init []
-  (try
-    (log/init)
-    (let [db (database/db)]
-      (database/init-database db)
-      (database/run-migrations db))
-    (log/info "Initialized server.")
-    (catch Exception e
-      (log/error e "Could not start server."))))
-
-(defn destroy []
-  (log/info "Destroyed server."))
+  (ring/ring-handler
+   (ring/router
+    [["/swagger.json"
+      {:get {:no-doc true
+             :swagger {:info {:title "Prepacked API"
+                              :description "alwxdev.com"}}
+             :handler (swagger/create-swagger-handler)}}]
+     api-routes]
+    {:exception pretty/exception
+     :data {:coercion reitit.coercion.spec/coercion
+            :muuntaja muuntaja.core/instance
+            :middleware [swagger/swagger-feature
+                         parameters/parameters-middleware
+                         muuntaja/format-negotiate-middleware
+                         muuntaja/format-response-middleware
+                         (exception/create-exception-middleware
+                          {::exception/default (partial exception/wrap-log-to-console exception/default-handler)})
+                         muuntaja/format-request-middleware
+                         coercion/coerce-response-middleware
+                         coercion/coerce-request-middleware
+                         multipart/multipart-middleware
+                         middleware/wrap-auth-user
+                         middleware/wrap-cors]}})
+   (ring/routes
+    (swagger-ui/create-swagger-ui-handler
+     {:path "/"
+      :config {:validatorUrl nil
+               :operationsSorter "alpha"}})
+    (ring/create-default-handler))))

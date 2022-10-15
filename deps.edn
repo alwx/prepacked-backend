@@ -1,6 +1,6 @@
 {:aliases  {:dev {:extra-paths ["."
                                 "development/src"
-                                
+
                                 "components/city/src"
                                 "components/city/resources"
                                 "components/feature/src"
@@ -17,7 +17,7 @@
                                 "components/navbar_item/resources"
                                 "components/user/src"
                                 "components/user/resources"
-                                
+
                                 "components/database/src"
                                 "components/database/resources"
                                 "components/env/src"
@@ -26,7 +26,7 @@
                                 "components/log/resources"
                                 "components/spec/src"
                                 "components/spec/resources"
-                                
+
                                 "bases/rest-api/src"
                                 "bases/rest-api/resources"]
                   :extra-deps {amazonica/amazonica {:mvn/version "0.3.162"}
@@ -39,6 +39,8 @@
                                com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
                                crypto-password/crypto-password {:mvn/version "0.3.0"}
                                dev.weavejester/ragtime {:mvn/version "0.9.2"}
+                               metosin/muuntaja {:mvn/version "0.6.8"}
+                               metosin/reitit {:mvn/version "0.5.18"}
                                metosin/spec-tools {:mvn/version "0.10.5"}
                                net.mikera/imagez {:mvn/version "0.12.0"}
                                nrepl/nrepl {:mvn/version "1.0.0"}
@@ -58,12 +60,12 @@
                                  "components/static_page/test"
                                  "components/navbar_item/test"
                                  "components/user/test"
-                                 
+
                                  "components/database/test"
                                  "components/env/test"
                                  "components/log/test"
                                  "components/spec/test"
-                                 
+
                                  "bases/rest-api/test"]}
 
             :poly {:main-opts ["-m" "polylith.clj.core.poly-cli.core"]
@@ -72,5 +74,5 @@
                                  :sha       "ccc261e60f6a875ff30858bf84cf67be105eac6f"
                                  :deps/root "projects/poly"}}}
             :build {:deps {io.github.seancorfield/build-clj {:git/tag "v0.8.3" :git/sha "7ac1f8d"}}
-                    :paths ["build/resources"]        
+                    :paths ["build/resources"]
                     :ns-default build}}}

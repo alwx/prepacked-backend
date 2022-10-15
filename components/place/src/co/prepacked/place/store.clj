@@ -94,7 +94,7 @@
 (defn update-place-feature! [con place-id feature-id input]
   (let [query {:update :place_feature
                :set (-> input
-                        (select-keys [:feature_id :value]))
+                        (select-keys [:value]))
                :where [:and
                        [:= :place_id [:cast place-id :uuid]]
                        [:= :feature_id feature-id]]}]
