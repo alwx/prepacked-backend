@@ -1,7 +1,8 @@
 (ns co.prepacked.places-list.spec
   (:require
-   [co.prepacked.spec.interface-ns :as spec]
-   [spec-tools.data-spec :as ds]))
+   [reitit.ring.middleware.multipart :as multipart]
+   [spec-tools.data-spec :as ds]
+   [co.prepacked.spec.interface-ns :as spec]))
 
 (def add-places-list
   (ds/spec {:name :core/add-places-list
@@ -30,7 +31,7 @@
   (ds/spec {:name :core/upload-file-for-places-list
             :spec {:priority int?
                    :copyright string?
-                   :file any?}}))
+                   :file multipart/temp-file-part}}))
 
 (def update-file-in-places-list
   (ds/spec {:name :core/update-file-in-places-list

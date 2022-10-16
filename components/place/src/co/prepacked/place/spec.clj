@@ -1,7 +1,8 @@
 (ns co.prepacked.place.spec
   (:require
-   [co.prepacked.spec.interface-ns :as spec]
-   [spec-tools.data-spec :as ds]))
+   [reitit.ring.middleware.multipart :as multipart]
+   [spec-tools.data-spec :as ds]
+   [co.prepacked.spec.interface-ns :as spec]))
 
 (def add-place
   (ds/spec {:name :core/add-place
@@ -30,7 +31,7 @@
   (ds/spec {:name :core/upload-file-for-place
             :spec {:priority int?
                    :copyright string?
-                   :file any?}}))
+                   :file multipart/temp-file-part}}))
 
 (def update-file-in-place
   (ds/spec {:name :core/update-file-in-place

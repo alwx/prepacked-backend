@@ -35,10 +35,12 @@
     [""
      {:post {:summary "create/register a new user"
              :parameters {:body user-spec/register}
+             :responses {200 {:body user-spec/visible-user}}
              :handler handler/register}}]
     ["/login"
      {:post {:summary "performs a login"
              :parameters {:body user-spec/login}
+             :responses {200 {:body user-spec/visible-user}}
              :handler handler/login}}]]
 
    ["/cities" {:swagger {:tags ["cities"]}}
@@ -93,7 +95,7 @@
                               :places_list_slug spec/slug?}
                        :header {:authorization string?}}
           :post {:summary "add a file (e.g. an image) to a specified list of places"
-                 :parameters {:body places-list-spec/upload-file-for-places-list}
+                 :parameters {:multipart places-list-spec/upload-file-for-places-list}
                  :handler handler/form-upload-places-list-file}}]
         ["/:file_id"
          {:parameters {:path {:slug spec/slug?
@@ -188,8 +190,7 @@
      [""
       {:parameters {:path {:place_id spec/uuid?}}
        :post {:summary "add a file (e.g. an image) to a place"
-              :parameters {:body place-spec/upload-file-for-place
-                           :multipart {:file multipart/temp-file-part}}
+              :parameters {:multipart place-spec/upload-file-for-place}
               :handler handler/form-upload-place-file}}]
      ["/:file_id"
       {:parameters {:path {:place_id spec/uuid?
@@ -250,4 +251,5 @@
      {:path "/"
       :config {:validatorUrl nil
                :operationsSorter "alpha"}})
-    (ring/create-default-handler))))
+    (ring/create-default-handler
+     {:not-found handler/not-found}))))

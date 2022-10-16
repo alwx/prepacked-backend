@@ -44,7 +44,7 @@
 (defn health [_]
   (handle 200 {:environment (env/env :environment)}))
 
-(defn other [_]
+(defn not-found [_]
   (handle 404 {:errors {:other ["Route not found."]}}))
 
 (defn cities [_]
@@ -149,9 +149,10 @@
   ;; this one is special because it expects form data, not a JSON
   (let [place-id (-> req :parameters :path :place_id)
         auth-user (-> req :auth-user)
-        body (-> req :parameters :body (update :priority parse-query-param))]
-    (if (s/valid? place-spec/upload-file-for-place body)
-      (let [[_ res] (place/handle-file-upload! auth-user place-id body)]
+        params (-> req :parameters :multipart
+                   (update :priority parse-query-param))]
+    (if (s/valid? place-spec/upload-file-for-place params)
+      (let [[_ res] (place/handle-file-upload! auth-user place-id params)]
         (handle-result res))
       (handle-invalid-spec))))
 
@@ -240,7 +241,8 @@
   (let [slug (-> req :parameters :path :slug)
         places-list-slug (-> req :parameters :path :places_list_slug)
         auth-user (-> req :auth-user)
-        params (-> req :parameters :body (update :priority parse-query-param))]
+        params (-> req :parameters :multipart 
+                   (update :priority parse-query-param))]
     (if (s/valid? places-list-spec/upload-file-for-places-list params)
       (let [[_ res] (places-list/handle-file-upload! auth-user slug places-list-slug params)]
         (handle-result res))
