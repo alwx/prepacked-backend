@@ -2,8 +2,7 @@
   (:require
    [co.prepacked.place.core :as core]))
 
-(defn places-with-all-dependencies [city-id places-list-id]
-  (core/places-with-all-dependencies city-id places-list-id))
+(def places-with-all-dependencies core/places-with-all-dependencies)
 
 (defn place-by-id [con id]
   (core/place-by-id con id))

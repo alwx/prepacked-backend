@@ -208,6 +208,60 @@
         [_ res] (places-list/delete-places-list! slug places-list-slug)]
     (handle-result res)))
 
+(defn add-places-list-feature [req]
+  (let [slug (-> req :parameters :path :slug)
+        places-list-slug (-> req :parameters :path :places_list_slug)
+        places-list-feature (-> req :parameters :body)]
+    (if (s/valid? places-list-spec/add-feature-to-places-list places-list-feature)
+      (let [[_ res] (places-list/add-feature-to-places-list! slug places-list-slug places-list-feature)]
+        (handle-result res))
+      (handle-invalid-spec))))
+
+(defn edit-places-list-feature [req]
+  (let [slug (-> req :parameters :path :slug)
+        places-list-slug (-> req :parameters :path :places_list_slug)
+        id (-> req :parameters :path :id)
+        places-list-feature (-> req :parameters :body)]
+    (if (s/valid? places-list-spec/update-feature-in-places-list places-list-feature)
+      (let [[_ res] (places-list/update-feature-in-places-list! slug places-list-slug id places-list-feature)]
+        (handle-result res))
+      (handle-invalid-spec))))
+
+(defn delete-places-list-feature [req]
+  (let [slug (-> req :parameters :path :slug)
+        places-list-slug (-> req :parameters :path :places_list_slug)
+        id (-> req :parameters :path :id)
+        [_ res] (places-list/delete-feature-in-places-list! slug places-list-slug id)]
+    (handle-result res)))
+
+(defn form-upload-places-list-file [req]
+  ;; this one is special because it expects form data, not a JSON
+  (let [slug (-> req :parameters :path :slug)
+        places-list-slug (-> req :parameters :path :places_list_slug)
+        auth-user (-> req :auth-user)
+        params (-> req :parameters :multipart
+                   (update :priority parse-query-param))]
+    (if (s/valid? places-list-spec/upload-file-for-places-list params)
+      (let [[_ res] (places-list/handle-file-upload! auth-user slug places-list-slug params)]
+        (handle-result res))
+      (handle-invalid-spec))))
+
+(defn edit-places-list-file [req]
+  (let [slug (-> req :parameters :path :slug)
+        places-list-slug (-> req :parameters :path :places_list_slug)
+        file-id (-> req :parameters :path :file_id)
+        place-file (-> req :parameters :body)]
+    (if (s/valid? places-list-spec/update-file-in-places-list place-file)
+      (let [[_ res] (places-list/update-file-in-places-list! slug places-list-slug file-id place-file)]
+        (handle-result res))
+      (handle-invalid-spec))))
+
+(defn delete-places-list-file [req]
+  (let [slug (-> req :parameters :path :slug)
+        places-list-slug (-> req :parameters :path :places_list_slug)
+        file-id (-> req :parameters :path :file_id)
+        [_ res] (places-list/delete-file-in-places-list! slug places-list-slug file-id)]
+    (handle-result res)))
 
 (defn add-places-list-place [req]
   (let [auth-user (-> req :auth-user)
@@ -234,35 +288,6 @@
         places-list-slug (-> req :parameters :path :places_list_slug)
         place-id (-> req :parameters :path :place_id)
         [_ res] (places-list/delete-place-in-places-list! slug places-list-slug place-id)]
-    (handle-result res)))
-
-(defn form-upload-places-list-file [req]
-  ;; this one is special because it expects form data, not a JSON
-  (let [slug (-> req :parameters :path :slug)
-        places-list-slug (-> req :parameters :path :places_list_slug)
-        auth-user (-> req :auth-user)
-        params (-> req :parameters :multipart 
-                   (update :priority parse-query-param))]
-    (if (s/valid? places-list-spec/upload-file-for-places-list params)
-      (let [[_ res] (places-list/handle-file-upload! auth-user slug places-list-slug params)]
-        (handle-result res))
-      (handle-invalid-spec))))
-
-(defn edit-places-list-file [req]
-  (let [slug (-> req :parameters :path :slug)
-        places-list-slug (-> req :parameters :path :places_list_slug)
-        file-id (-> req :parameters :path :file_id)
-        place-file (-> req :parameters :body)]
-    (if (s/valid? places-list-spec/update-file-in-places-list place-file)
-      (let [[_ res] (places-list/update-file-in-places-list! slug places-list-slug file-id place-file)]
-        (handle-result res))
-      (handle-invalid-spec))))
-
-(defn delete-places-list-file [req]
-  (let [slug (-> req :parameters :path :slug)
-        places-list-slug (-> req :parameters :path :places_list_slug)
-        file-id (-> req :parameters :path :file_id)
-        [_ res] (places-list/delete-file-in-places-list! slug places-list-slug file-id)]
     (handle-result res)))
 
 (defn add-static-page [req]

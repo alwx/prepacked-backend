@@ -2,35 +2,38 @@
   (:require
    [co.prepacked.places-list.core :as core]))
 
-(defn places-lists-with-all-dependencies [city-id]
-  (core/places-lists-with-all-dependencies city-id))
+;; operations with `places-lists`
 
-(defn places-list-with-all-dependencies [city-slug places-list-slug]
-  (core/places-list-with-all-dependencies city-slug places-list-slug))
+(def places-lists-with-all-dependencies core/places-lists-with-all-dependencies)
 
-(defn add-places-list! [auth-user city-slug places-list-input]
-  (core/add-places-list! auth-user city-slug places-list-input))
+(def places-list-with-all-dependencies core/places-list-with-all-dependencies)
 
-(defn update-places-list! [city-slug places-list-slug places-list-input]
-  (core/update-places-list! city-slug places-list-slug places-list-input))
+(def add-places-list! core/add-places-list!)
 
-(defn delete-places-list! [city-slug places-list-slug]
-  (core/delete-places-list! city-slug places-list-slug))
+(def update-places-list! core/update-places-list!)
 
-(defn add-place-to-places-list! [auth-user city-slug places-list-slug input]
-  (core/add-place-to-places-list! auth-user city-slug places-list-slug input))
+(def delete-places-list! core/delete-places-list!)
 
-(defn update-place-in-places-list! [city-slug places-list-slug place-id input]
-  (core/update-place-in-places-list! city-slug places-list-slug place-id input))
+;; operations with `places-list-features`
 
-(defn delete-place-in-places-list! [city-slug places-list-slug place-id]
-  (core/delete-place-in-places-list! city-slug places-list-slug place-id))
+(def add-feature-to-places-list! core/add-feature-to-places-list!)
 
-(defn handle-file-upload! [auth-user city-slug places-list-slug input]
-  (core/handle-file-upload! auth-user city-slug places-list-slug input))
+(def update-feature-in-places-list! core/update-feature-in-places-list!)
 
-(defn update-file-in-places-list! [city-slug places-list-slug file-id input]
-  (core/update-file-in-places-list! city-slug places-list-slug file-id input))
+(def delete-feature-in-places-list! core/delete-feature-in-places-list!)
 
-(defn delete-file-in-places-list! [city-slug places-list-slug file-id]
-  (core/delete-file-in-places-list! city-slug places-list-slug file-id))
+;; operations with `places-list-files`
+
+(def handle-file-upload! core/handle-file-upload!)
+
+(def update-file-in-places-list! core/update-file-in-places-list!)
+
+(def delete-file-in-places-list! core/delete-file-in-places-list!)
+
+;; operations with `places-list-places`
+
+(def add-place-to-places-list! core/add-place-to-places-list!)
+
+(def update-place-in-places-list! core/update-place-in-places-list!)
+
+(def delete-place-in-places-list! core/delete-place-in-places-list!)

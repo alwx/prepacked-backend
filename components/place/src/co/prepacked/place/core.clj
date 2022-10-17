@@ -6,19 +6,18 @@
             [co.prepacked.place.osm :as osm]
             [co.prepacked.place.store :as store]))
 
-(defn places-with-all-dependencies [city-id places-list-id]
-  (jdbc/with-db-transaction [con (database/db)]
-    (let [places (store/places con city-id places-list-id)
-          features (->> (store/places-list-features con places-list-id)
-                        (group-by :place_id))
-          files (->> (store/places-list-files con places-list-id)
-                     (group-by :place_id))
-          places' (->> places
-                       (mapv (fn [{:keys [id] :as place}]
-                               (assoc place 
-                                      :features (get features id []) 
-                                      :files (get files id [])))))]
-      [true places'])))
+(defn places-with-all-dependencies [con city-id places-list-id]
+  (let [places (store/places con city-id places-list-id)
+        features (->> (store/places-list-features con places-list-id)
+                      (group-by :place_id))
+        files (->> (store/places-list-files con places-list-id)
+                   (group-by :place_id))
+        places' (->> places
+                     (mapv (fn [{:keys [id] :as place}]
+                             (assoc place
+                                    :features (get features id [])
+                                    :files (get files id [])))))]
+    [true places']))
 
 (defn place-by-id [con id]
   (store/find-by-id con id))

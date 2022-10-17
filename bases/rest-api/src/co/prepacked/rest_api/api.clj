@@ -71,24 +71,6 @@
          :delete {:summary "delete a places list"
                   :parameters {:header {:authorization string?}}
                   :handler handler/delete-places-list}}]
-       ["/places"
-        [""
-         {:parameters {:path {:slug spec/slug?
-                              :places_list_slug spec/slug?}
-                       :header {:authorization string?}}
-          :post {:summary "add a place to a specified list of places"
-                 :parameters {:body places-list-spec/add-place-to-places-list}
-                 :handler handler/add-places-list-place}}]
-        ["/:place_id"
-         {:parameters {:path {:slug spec/slug?
-                              :places_list_slug spec/slug?
-                              :place_id spec/uuid?}
-                       :header {:authorization string?}}
-          :put {:summary "update a place in a specified list of places"
-                :parameters {:body places-list-spec/update-place-in-places-list}
-                :handler handler/edit-places-list-place}
-          :delete {:summary "deletes a place from a specified list of places"
-                   :handler handler/delete-places-list-place}}]]
        ["/files"
         [""
          {:parameters {:path {:slug spec/slug?
@@ -106,7 +88,45 @@
                 :parameters {:body places-list-spec/update-file-in-places-list}
                 :handler handler/edit-places-list-file}
           :delete {:summary "deletes a file from a specified list of places"
-                   :handler handler/delete-places-list-file}}]]]]
+                   :handler handler/delete-places-list-file}}]]
+       ["/features"
+        [""
+         {:parameters {:path {:slug spec/slug?
+                              :places_list_slug spec/slug?}
+                       :header {:authorization string?}}
+          :post {:summary "add a feature to a specified list of places"
+                 :parameters {:body places-list-spec/add-feature-to-places-list}
+                 :handler handler/add-places-list-feature}}]
+        ["/:id"
+         {:parameters {:path {:slug spec/slug?
+                              :places_list_slug spec/slug?
+                              :id spec/uuid?}
+                       :header {:authorization string?}}
+          :put {:summary "update a feature in a specified list of places"
+                :parameters {:body places-list-spec/update-feature-in-places-list}
+                :handler handler/edit-places-list-feature}
+          :delete {:summary "deletes a feature from a specified list of places"
+                   :handler handler/delete-places-list-feature}}]]
+       
+
+       ["/places"
+        [""
+         {:parameters {:path {:slug spec/slug?
+                              :places_list_slug spec/slug?}
+                       :header {:authorization string?}}
+          :post {:summary "add a place to a specified list of places"
+                 :parameters {:body places-list-spec/add-place-to-places-list}
+                 :handler handler/add-places-list-place}}]
+        ["/:place_id"
+         {:parameters {:path {:slug spec/slug?
+                              :places_list_slug spec/slug?
+                              :place_id spec/uuid?}
+                       :header {:authorization string?}}
+          :put {:summary "update a place in a specified list of places"
+                :parameters {:body places-list-spec/update-place-in-places-list}
+                :handler handler/edit-places-list-place}
+          :delete {:summary "deletes a place from a specified list of places"
+                   :handler handler/delete-places-list-place}}]]]]
 
      ["/static-pages"
       [""

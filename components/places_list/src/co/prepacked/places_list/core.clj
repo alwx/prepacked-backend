@@ -2,9 +2,12 @@
   (:require [clojure.java.jdbc :as jdbc]
             [co.prepacked.database.interface-ns :as database]
             [co.prepacked.city.interface-ns :as city]
+            [co.prepacked.feature.interface-ns :as feature]
             [co.prepacked.file.interface-ns :as file]
             [co.prepacked.place.interface-ns :as place]
             [co.prepacked.places-list.store :as store]))
+
+;; operations with `places-lists`
 
 (defn places-lists-with-all-dependencies [city-id]
   (jdbc/with-db-transaction [con (database/db)]
@@ -17,8 +20,12 @@
       places-lists')))
 
 (defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
-  (let [[_ places] (place/places-with-all-dependencies city_id id)]
-    (assoc places-list :places places)))
+  (jdbc/with-db-transaction [con (database/db)]
+    (let [[_ places] (place/places-with-all-dependencies con city_id id)
+          features (store/places-list-features con id)]
+      (assoc places-list
+             :places places
+             :features features))))
 
 (defn places-list-with-all-dependencies [city-slug places-list-slug]
   (if-let [{city-id :id} (city/city-by-slug city-slug)]
@@ -63,48 +70,49 @@
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
       [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
 
-(defn add-place-to-places-list! [auth-user city-slug places-list-slug input]
+;; operations with `places-list-features`
+
+(defn add-feature-to-places-list! [city-slug places-list-slug input]
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
       (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
-        (if (place/place-by-id con (:place_id input))
-          (if (store/find-places-list-place con city-places-list-id (:place_id input))
-            [false {:errors {:slug ["The place is already added to the specified places list."]} :-code 400}]
-            (let [input' (merge input {:places_list_id city-places-list-id
-                                       :user_id (:id auth-user)})]
-              (store/insert-places-list-place! con input')
-              (if-let [places-list-place (store/find-places-list-place con city-places-list-id (:place_id input'))]
-                [true places-list-place]
-                [false {:errors {:other ["Cannot add the place to the list in the database."]} :-code 500}])))
-          [false {:errors {:place ["Place with the specified id doesn't exist."]} :-code 404}])
+        (if (feature/feature-by-id con (:feature_id input))
+          (let [input' (merge input {:places_list_id city-places-list-id})
+                id (store/insert-places-list-feature! con input')]
+            (if-let [places-list-feature (store/find-places-list-feature con id)]
+              [true places-list-feature]
+              [false {:errors {:other ["Cannot add the feature to the list in the database."]} :-code 500}]))
+          [false {:errors {:feature ["Feature with the specified id doesn't exist."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
       [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
 
-(defn update-place-in-places-list! [city-slug places-list-slug place-id input]
+(defn update-feature-in-places-list! [city-slug places-list-slug id input]
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
-      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
-        (if-let [places-list-place (store/find-places-list-place con city-places-list-id place-id)]
-          (let [input' (merge places-list-place input)]
-            (store/update-places-list-place! con city-places-list-id place-id input')
-            (if-let [places-list-place' (store/find-places-list-place con city-places-list-id place-id)]
-              [true places-list-place']
-              [false {:errors {:other ["Cannot update the place in the database."]} :-code 500}]))
-          [false {:errors {:other ["Cannot find the specified place in the place list."]} :-code 404}])
+      (if (store/find-by-slug con city-id places-list-slug)
+        (if-let [places-list-feature (store/find-places-list-feature con id)]
+          (let [input' (merge places-list-feature input)]
+            (store/update-places-list-feature! con id input')
+            (if-let [places-list-feature' (store/find-places-list-feature con id)]
+              [true places-list-feature']
+              [false {:errors {:other ["Cannot update the feature in the places list."]} :-code 500}]))
+          [false {:errors {:feature ["Cannot find the specified feature in the place list."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
       [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
 
-(defn delete-place-in-places-list! [city-slug places-list-slug place-id]
+(defn delete-feature-in-places-list! [city-slug places-list-slug id]
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
-      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
-        (if (store/find-places-list-place con city-places-list-id place-id)
+      (if (store/find-by-slug con city-id places-list-slug)
+        (if (store/find-places-list-feature con id)
           (do
-            (store/delete-places-list-place! con city-places-list-id place-id)
+            (store/delete-places-list-feature! con id)
             [true nil])
-          [false {:errors {:other ["Cannot find the specified place in the place list."]} :-code 404}])
+          [false {:errors {:feature ["Cannot find the specified feature in the places list."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
       [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
+
+;; operations with `places-list-files`
 
 (defn- add-file-to-places-list! [con places-list-id input]
   (if (file/file-by-id con (:file_id input))
@@ -160,5 +168,50 @@
             (store/delete-places-list-file! con city-places-list-id file-id)
             [true nil])
           [false {:errors {:other ["Cannot find the specified file for the place's list."]} :-code 404}])
+        [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
+      [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
+
+;; operations with `places-list-places`
+
+(defn add-place-to-places-list! [auth-user city-slug places-list-slug input]
+  (jdbc/with-db-transaction [con (database/db)]
+    (if-let [{city-id :id} (city/city-by-slug city-slug)]
+      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
+        (if (place/place-by-id con (:place_id input))
+          (if (store/find-places-list-place con city-places-list-id (:place_id input))
+            [false {:errors {:slug ["The place is already added to the specified places list."]} :-code 400}]
+            (let [input' (merge input {:places_list_id city-places-list-id
+                                       :user_id (:id auth-user)})]
+              (store/insert-places-list-place! con input')
+              (if-let [places-list-place (store/find-places-list-place con city-places-list-id (:place_id input'))]
+                [true places-list-place]
+                [false {:errors {:other ["Cannot add the place to the list in the database."]} :-code 500}])))
+          [false {:errors {:place ["Place with the specified id doesn't exist."]} :-code 404}])
+        [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
+      [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
+
+(defn update-place-in-places-list! [city-slug places-list-slug place-id input]
+  (jdbc/with-db-transaction [con (database/db)]
+    (if-let [{city-id :id} (city/city-by-slug city-slug)]
+      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
+        (if-let [places-list-place (store/find-places-list-place con city-places-list-id place-id)]
+          (let [input' (merge places-list-place input)]
+            (store/update-places-list-place! con city-places-list-id place-id input')
+            (if-let [places-list-place' (store/find-places-list-place con city-places-list-id place-id)]
+              [true places-list-place']
+              [false {:errors {:other ["Cannot update the place in the database."]} :-code 500}]))
+          [false {:errors {:other ["Cannot find the specified place in the place list."]} :-code 404}])
+        [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
+      [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))
+
+(defn delete-place-in-places-list! [city-slug places-list-slug place-id]
+  (jdbc/with-db-transaction [con (database/db)]
+    (if-let [{city-id :id} (city/city-by-slug city-slug)]
+      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
+        (if (store/find-places-list-place con city-places-list-id place-id)
+          (do
+            (store/delete-places-list-place! con city-places-list-id place-id)
+            [true nil])
+          [false {:errors {:other ["Cannot find the specified place in the place list."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
       [false {:errors {:city ["There is no city with the specified slug."]} :-code 404}])))

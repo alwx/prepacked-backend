@@ -106,6 +106,27 @@
     {:conditional? true})
    "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_city_id_slug ON places_list (city_id, slug)"])
 
+(def places-list-feature
+  [(jdbc/create-table-ddl
+    :places_list_feature
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
+     [:places_list_id :uuid "REFERENCES places_list(id)"]
+     [:feature_id :text "REFERENCES feature(id)"]
+     [:value :text]
+     [:priority :integer "DEFAULT 0 NOT NULL"]
+     [:created_at :timestamp]
+     [:updated_at :timestamp]]
+    {:conditional? true})])
+
+(def places-list-file
+  [(jdbc/create-table-ddl
+    :places_list_file
+    [[:places_list_id :uuid "REFERENCES places_list(id)"]
+     [:file_id :uuid "REFERENCES file(id)"]
+     [:priority :integer "DEFAULT 0 NOT NULL"]]
+    {:conditional? true})
+   "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_file ON places_list_file (places_list_id, file_id)"])
+
 (def places-list-place
   [(jdbc/create-table-ddl
     :places_list_place
@@ -117,15 +138,6 @@
      [:updated_at :timestamp]]
     {:conditional? true})
    "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_place ON places_list_place (places_list_id, place_id)"])
-
-(def places-list-file
-  [(jdbc/create-table-ddl
-    :places_list_file
-    [[:places_list_id :uuid "REFERENCES places_list(id)"]
-     [:file_id :uuid "REFERENCES file(id)"]
-     [:priority :integer "DEFAULT 0 NOT NULL"]]
-    {:conditional? true})
-   "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_list_file ON places_list_file (places_list_id, file_id)"])
 
 (def static-page
   [(jdbc/create-table-ddl
@@ -162,7 +174,8 @@
            place-feature
            place-file
            places-list
-           places-list-place
+           places-list-feature
            places-list-file
+           places-list-place
            static-page
            navbar-item)))

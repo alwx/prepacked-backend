@@ -18,14 +18,20 @@
                    :description spec/non-empty-string?
                    :priority int?}}))
 
-(def add-place-to-places-list
-  (ds/spec {:name :core/add-place-to-places-list
-            :spec {:place_id spec/uuid?
-                   :comment string?}}))
+;; operations with `places-list-features`
 
-(def update-place-in-places-list
-  (ds/spec {:name :core/update-place-in-places-list
-            :spec {:comment string?}}))
+(def add-feature-to-places-list
+  (ds/spec {:name :core/add-feature-to-places-list
+            :spec {:feature_id spec/slug?
+                   :value string?
+                   :priority int?}}))
+
+(def update-feature-in-places-list
+  (ds/spec {:name :core/update-feature-in-places-list
+            :spec {:value string?
+                   :priority int?}}))
+
+;; operations with `places-list-files`
 
 (def upload-file-for-places-list
   (ds/spec {:name :core/upload-file-for-places-list
@@ -36,3 +42,14 @@
 (def update-file-in-places-list
   (ds/spec {:name :core/update-file-in-places-list
             :spec {:priority int?}}))
+
+;; operations with `places-list-places`
+
+(def add-place-to-places-list
+  (ds/spec {:name :core/add-place-to-places-list
+            :spec {:place_id spec/uuid?
+                   :comment string?}}))
+
+(def update-place-in-places-list
+  (ds/spec {:name :core/update-place-in-places-list
+            :spec {:comment string?}}))
