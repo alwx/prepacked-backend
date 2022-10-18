@@ -1,12 +1,14 @@
-{:up   ["INSERT INTO feature (id, title, icon, priority) VALUES ('price', 'Price', 'euro-sign', 100);"
-        "INSERT INTO feature (id, title, icon, priority) VALUES ('credit-card', 'Cards', 'credit-card', 99);"
-        "INSERT INTO feature (id, title, icon, priority) VALUES ('wifi', 'WiFi', 'wifi', 98);"
-        "INSERT INTO feature (id, title, icon, priority) VALUES ('laptop-policy', 'Laptop Policy', 'laptop', 97);"
-        "INSERT INTO feature (id, title, icon, priority) VALUES ('crowd', 'Crowd', 'users', 96);"
-        "INSERT INTO feature (id, title, icon, priority) VALUES ('website', 'Website', 'globe-europe', 95);"]
+{:up   ["INSERT INTO feature (id, title, icon) VALUES ('price', 'Price', 'euro-sign');"
+        "INSERT INTO feature (id, title, icon) VALUES ('credit-card', 'Cards', 'credit-card');"
+        "INSERT INTO feature (id, title, icon) VALUES ('wifi', 'WiFi', 'wifi');"
+        "INSERT INTO feature (id, title, icon) VALUES ('laptop-policy', 'Laptop Policy', 'laptop');"
+        "INSERT INTO feature (id, title, icon) VALUES ('crowd', 'Crowd', 'users');"
+        "INSERT INTO feature (id, title, icon) VALUES ('link', 'Link (JSON / plain)', 'globe-europe');"
+        "INSERT INTO feature (id, title, icon) VALUES ('text', 'Text', '');"]
  :down ["DELETE FROM feature WHERE id = 'price';"
         "DELETE FROM feature WHERE id = 'credit-card';"
         "DELETE FROM feature WHERE id = 'wifi';"
         "DELETE FROM feature WHERE id = 'laptop-policy';"
         "DELETE FROM feature WHERE id = 'crowd';"
-        "DELETE FROM feature WHERE id = 'website';"]}
+        "DELETE FROM feature WHERE id = 'link';"
+        "DELETE FROM feature WHERE id = 'text';"]}

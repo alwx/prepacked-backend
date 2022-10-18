@@ -132,17 +132,17 @@
 
 (defn edit-place-feature [req]
   (let [place-id (-> req :parameters :path :place_id)
-        feature-id (-> req :parameters :path :feature_id)
+        id (-> req :parameters :path :id)
         place-feature (-> req :parameters :body)]
     (if (s/valid? place-spec/update-feature-in-place place-feature)
-      (let [[_ res] (place/update-feature-in-place! place-id feature-id place-feature)]
+      (let [[_ res] (place/update-feature-in-place! place-id id place-feature)]
         (handle-result res))
       (handle-invalid-spec))))
 
 (defn delete-place-feature [req]
   (let [place-id (-> req :parameters :path :place_id)
-        feature-id (-> req :parameters :path :feature_id)
-        [_ res] (place/delete-feature-in-place! place-id feature-id)]
+        id (-> req :parameters :path :id)
+        [_ res] (place/delete-feature-in-place! place-id id)]
     (handle-result res)))
 
 (defn form-upload-place-file [req]

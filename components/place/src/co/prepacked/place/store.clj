@@ -71,40 +71,37 @@
                       [:place] [:= :place.id :place_feature.place_id]
                       [:places_list_place] [:= :places_list_place.place_id :place.id]]
                :where [:= :places_list_place.places_list_id [:cast places-list-id :uuid]]
-               :order-by [[:feature.priority :desc]]}
+               :order-by [[:place_feature.priority :desc] [:place_feature.created_at :asc]]}
         results (jdbc/query con (sql/format query))]
     results))
 
-(defn find-place-feature [con place-id feature-id]
+(defn find-place-feature [con id]
   (let [query {:select [:*]
                :from [:place_feature]
-               :where [:and
-                       [:= :place_id [:cast place-id :uuid]]
-                       [:= :feature_id feature-id]]}
+               :where [:= :id [:cast id :uuid]]}
         results (jdbc/query con (sql/format query))]
     (first results)))
 
 (defn insert-place-feature! [con input]
   (let [query {:insert-into [:place_feature]
                :values [(-> input
-                            (select-keys [:place_id :feature_id :value])
-                            (update :place_id database/->uuid))]}]
-    (jdbc/execute! con (sql/format query))))
+                            (select-keys [:place_id :feature_id :value :priority])
+                            (update :place_id database/->uuid)
+                            (database/add-now-timestamps [:created_at :updated_at]))]}
+        result (jdbc/execute! con (sql/format query) {:return-keys ["id"]})]
+    (:id result)))
 
-(defn update-place-feature! [con place-id feature-id input]
+(defn update-place-feature! [con id input]
   (let [query {:update :place_feature
                :set (-> input
-                        (select-keys [:value]))
-               :where [:and
-                       [:= :place_id [:cast place-id :uuid]]
-                       [:= :feature_id feature-id]]}]
+                        (select-keys [:value :priority])
+                        (database/add-now-timestamps [:updated_at]))
+               :where [:= :id [:cast id :uuid]]}]
     (jdbc/execute! con (sql/format query))))
 
-(defn delete-place-feature! [con place-id feature-id]
+(defn delete-place-feature! [con id]
   (let [query {:delete-from :place_feature
-               :where [:and
-                       [:= :place_id [:cast place-id :uuid]]
-                       [:= :feature_id feature-id]]}]
+               :where [:= :id [:cast id :uuid]]}]
     (jdbc/execute! con (sql/format query))))
 
 (defn find-place-file [con place-id file-id]

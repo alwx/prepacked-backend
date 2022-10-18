@@ -197,14 +197,14 @@
        :post {:summary "add a feature to a place"
               :parameters {:body place-spec/add-feature-to-place}
               :handler handler/add-place-feature}}]
-     ["/:feature_id"
+     ["/:id"
       {:parameters {:path {:place_id spec/uuid?
-                           :feature_id spec/slug?}}
+                           :id spec/uuid?}}
        :put {:summary "update a feature in a place"
              :parameters {:body place-spec/update-feature-in-place}
              :handler handler/edit-place-feature}
        :delete {:summary "delete a feature from a place"
-                :handler handler/delete-place-feature}}]]
+                :handler handler/delete-place-feature}}]] 
 
     ["/:place_id/files"
      [""

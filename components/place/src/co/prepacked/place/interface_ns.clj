@@ -4,32 +4,26 @@
 
 (def places-with-all-dependencies core/places-with-all-dependencies)
 
-(defn place-by-id [con id]
-  (core/place-by-id con id))
+(def place-by-id core/place-by-id)
 
-(defn add-place! [auth-user place-input]
-  (core/add-place! auth-user place-input))
+(def add-place! core/add-place!)
 
-(defn update-place! [place-id place-input]
-  (core/update-place! place-id place-input))
+(def update-place! core/update-place!)
 
-(defn delete-place! [place-id]
-  (core/delete-place! place-id))
+(def delete-place! core/delete-place!)
 
-(defn add-feature-to-place! [place-id input]
-  (core/add-feature-to-place! place-id input))
+;; operations with `place-features`
 
-(defn update-feature-in-place! [place-id feature-id input]
-  (core/update-feature-in-place! place-id feature-id input))
+(def add-feature-to-place! core/add-feature-to-place!)
 
-(defn delete-feature-in-place! [place-id feature-id]
-  (core/delete-feature-in-place! place-id feature-id))
+(def update-feature-in-place! core/update-feature-in-place!)
 
-(defn handle-file-upload! [auth-user place-id input]
-  (core/handle-file-upload! auth-user place-id input))
+(def delete-feature-in-place! core/delete-feature-in-place!)
 
-(defn update-file-in-place! [place-id file-id input]
-  (core/update-file-in-place! place-id file-id input))
+;; operations with `place-files`
 
-(defn delete-file-in-place! [place-id file-id]
-  (core/delete-file-in-place! place-id file-id))
+(def handle-file-upload! core/handle-file-upload!)
+
+(def update-file-in-place! core/update-file-in-place!)
+
+(def delete-file-in-place! core/delete-file-in-place!)

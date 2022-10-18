@@ -18,14 +18,20 @@
                    :description spec/non-empty-string?
                    :priority int?}}))
 
+;; operations with `place-features`
+
 (def add-feature-to-place
   (ds/spec {:name :core/add-feature-to-place
             :spec {:feature_id spec/slug?
-                   :value string?}}))
+                   :value string?
+                   :priority int?}}))
 
 (def update-feature-in-place
   (ds/spec {:name :core/update-feature-in-place
-            :spec {:value string?}}))
+            :spec {:value string?
+                   :priority int?}}))
+
+;; operations with `place-files`
 
 (def upload-file-for-place
   (ds/spec {:name :core/upload-file-for-place

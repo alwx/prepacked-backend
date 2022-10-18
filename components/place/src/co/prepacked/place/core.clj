@@ -53,47 +53,45 @@
         [true nil])
       [false {:errors {:other ["Cannot find the place in the database."]} :-code 404}])))
 
+;; operations with `place-features`
+
 (defn add-feature-to-place! [place-id input]
   (jdbc/with-db-transaction [con (database/db)]
     (if (store/find-by-id con place-id)
       (if (feature/feature-by-id con (:feature_id input))
-        (let [input' (merge input {:place_id place-id})]
-          (if (store/find-place-feature con place-id (:feature_id input'))
-            [false {:errors {:place_feature ["This feature is already added to the specified place."]} :-code 400}]
-            (do
-              (store/insert-place-feature! con input')
-              (if-let [place-feature (store/find-place-feature con place-id (:feature_id input'))]
-                [true place-feature]
-                [false {:errors {:other ["Cannot update the place's feature in the database."]} :-code 500}]))))
-        [false {:errors {:feature ["There is no feature with the specified id."]} :-code 404}])
+        (let [input' (merge input {:place_id place-id})
+              id (store/insert-place-feature! con input')]
+          (if-let [place-feature (store/find-place-feature con id)]
+            [true place-feature]
+            [false {:errors {:other ["Cannot add the feature to the place in the database."]} :-code 500}]))
+        [false {:errors {:feature ["Feature with the specified id doesn't exist."]} :-code 404}])
       [false {:errors {:place ["There is no place with the specified id."]} :-code 404}])))
 
-(defn update-feature-in-place! [place-id feature-id input]
+(defn update-feature-in-place! [place-id id input]
   (jdbc/with-db-transaction [con (database/db)]
     (if (store/find-by-id con place-id)
       (if (feature/feature-by-id con (:feature_id input))
-        (if-let [place-feature (store/find-place-feature con place-id feature-id)]
+        (if-let [place-feature (store/find-place-feature con id)]
           (let [input' (merge place-feature input {:place_id place-id})]
-            (if (store/find-place-feature con place-id (:feature_id input'))
-              [false {:errors {:place_feature ["This feature is already added to the specified place."]} :-code 400}]
-              (do
-                (store/update-place-feature! con place-id feature-id input')
-                (if-let [place-feature (store/find-place-feature con place-id (:feature_id input'))]
-                  [true place-feature]
-                  [false {:errors {:other ["Cannot update the place's feature in the database."]} :-code 500}]))))
+            (store/update-place-feature! con id input')
+            (if-let [place-feature (store/find-place-feature con id)]
+              [true place-feature]
+              [false {:errors {:other ["Cannot update the place's feature in the database."]} :-code 500}]))
           [false {:errors {:other ["Cannot find the specified feature for the place."]} :-code 404}])
         [false {:errors {:feature ["There is no feature with the specified id."]} :-code 404}])
       [false {:errors {:place ["There is no place with the specified id."]} :-code 404}])))
 
-(defn delete-feature-in-place! [place-id feature-id]
+(defn delete-feature-in-place! [place-id id]
   (jdbc/with-db-transaction [con (database/db)]
     (if (store/find-by-id con place-id)
-      (if (store/find-place-feature con place-id feature-id)
+      (if (store/find-place-feature con id)
         (do
-          (store/delete-place-feature! con place-id feature-id)
+          (store/delete-place-feature! con id)
           [true nil])
         [false {:errors {:other ["Cannot find the specified feature for the place."]} :-code 404}])
       [false {:errors {:city ["There is no place with the specified id."]} :-code 404}])))
+
+;; operations with `place-files`
 
 (defn- add-file-to-place! [con place-id input]
   (if (file/file-by-id con (:file_id input))

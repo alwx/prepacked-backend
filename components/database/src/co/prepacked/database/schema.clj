@@ -33,8 +33,7 @@
     :feature
     [[:id :text :primary :key]
      [:title :text]
-     [:icon :text]
-     [:priority :integer "DEFAULT 0 NOT NULL"]]
+     [:icon :text]]
     {:conditional? true})])
 
 (def file
@@ -76,11 +75,14 @@
 (def place-feature
   [(jdbc/create-table-ddl
     :place_feature
-    [[:place_id :uuid "REFERENCES place(id)"]
+    [[:id :uuid :primary :key "DEFAULT uuid_generate_v4()"]
+     [:place_id :uuid "REFERENCES place(id)"]
      [:feature_id :text "REFERENCES feature(id)"]
-     [:value :text]]
-    {:conditional? true})
-   "CREATE UNIQUE INDEX IF NOT EXISTS idx_place_feature ON place_feature (place_id, feature_id)"])
+     [:value :text]
+     [:priority :integer "DEFAULT 0 NOT NULL"]
+     [:created_at :timestamp]
+     [:updated_at :timestamp]]
+    {:conditional? true})])
 
 (def place-file
   [(jdbc/create-table-ddl

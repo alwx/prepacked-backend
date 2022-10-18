@@ -16,14 +16,14 @@
 (defn insert-feature! [con input]
   (let [query {:insert-into [:feature]
                :values [(-> input
-                            (select-keys [:id :title :icon :priority]))]}
+                            (select-keys [:id :title :icon]))]}
         result (jdbc/execute! con (sql/format query) {:return-keys ["id"]})]
     (:id result)))
 
 (defn update-feature! [con id input]
   (let [query {:update :feature
                :set    (-> input
-                           (select-keys [:id :title :icon :priority]))
+                           (select-keys [:id :title :icon]))
                :where  [:= :id id]}]
     (jdbc/execute! con (sql/format query))))
 
