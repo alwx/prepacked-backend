@@ -64,7 +64,7 @@
                :from [[:places_list_feature]]
                :join [[:feature] [:= :feature.id :places_list_feature.feature_id]]
                :where [:= :places_list_feature.places_list_id [:cast places-list-id :uuid]]
-               :order-by [[:feature.priority :desc] [:places_list_feature.created_at :asc]]}
+               :order-by [[:places_list_feature.priority :desc] [:places_list_feature.created_at :asc]]}
         results (jdbc/query con (sql/format query))]
     results))
 
