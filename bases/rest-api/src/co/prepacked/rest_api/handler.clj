@@ -194,9 +194,9 @@
       (handle-invalid-spec))))
 
 (defn edit-places-list [req]
-  (let [slug (-> req :parameteres :path :slug)
-        places-list-slug (-> req :parameteres :path :places_list_slug)
-        places-list-data (-> req :parameteres :body)]
+  (let [slug (-> req :parameters :path :slug)
+        places-list-slug (-> req :parameters :path :places_list_slug)
+        places-list-data (-> req :parameters :body)]
     (if (s/valid? places-list-spec/update-places-list places-list-data)
       (let [[_ res] (places-list/update-places-list! slug places-list-slug places-list-data)]
         (handle-result res))

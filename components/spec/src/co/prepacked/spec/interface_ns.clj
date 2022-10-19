@@ -1,6 +1,5 @@
 (ns co.prepacked.spec.interface-ns
-  (:require 
-    [co.prepacked.spec.core :as core]))
+  (:require [co.prepacked.spec.core :as core]))
 
 (def username? core/username?)
 
@@ -15,3 +14,5 @@
 (def password? core/password?)
 
 (def uuid? core/uuid?)
+
+(def vector-of-strings? core/vector-of-strings?)

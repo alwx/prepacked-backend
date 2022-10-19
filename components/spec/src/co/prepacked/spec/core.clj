@@ -60,8 +60,8 @@
             :swagger/example "some-slug"}))
 
 (def password?
-  (st/spec {:spec        (s/and string? #(<= 8 (count %)))
-            :type        :string
+  (st/spec {:spec (s/and string? #(<= 8 (count %)))
+            :type :string
             :description "A string spec with more than or equal to 8 characters."
             :swagger/example "test-password"}))
 
@@ -70,3 +70,8 @@
             :type :string
             :description "A string spec with UUID."
             :swagger/example "47d546e2-0e54-4eb5-9b27-abcdefabcdef"}))
+
+(def vector-of-strings?
+  (st/spec {:spec (s/coll-of string? :kind vector?)
+            :description "A vector of strings"
+            :swagger/example "[\"location\"]"}))

@@ -9,14 +9,16 @@
             :spec {:slug spec/slug?
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
-                   :priority int?}}))
+                   :priority int?
+                   :shown_features spec/vector-of-strings?}}))
 
 (def update-places-list
   (ds/spec {:name :core/update-places-list
             :spec {:slug spec/slug?
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
-                   :priority int?}}))
+                   :priority int?
+                   :shown_features spec/vector-of-strings?}}))
 
 ;; operations with `places-list-features`
 

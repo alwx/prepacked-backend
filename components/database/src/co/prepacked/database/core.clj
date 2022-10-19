@@ -1,11 +1,33 @@
 (ns co.prepacked.database.core
-  (:require [java-time]
+  (:require [clojure.data.json :as json]
+            [clojure.java.jdbc :as jdbc]
+            [java-time]
             [ragtime.jdbc]
             [ragtime.core]
             [ragtime.reporter]
             [ragtime.strategy]
             [co.prepacked.env.interface-ns :as env]
-            [co.prepacked.log.interface-ns :as log]))
+            [co.prepacked.log.interface-ns :as log])
+  (:import  [org.postgresql.util PGobject]))
+
+(defmulti read-pgobject
+  "Convert returned PGobject to Clojure value."
+  #(keyword (when (some? %) (.getType ^PGobject %))))
+
+(defmethod read-pgobject :jsonb
+  [^PGobject x]
+  (when-let [val (.getValue x)]
+    (json/read-str val)))
+
+(defmethod read-pgobject :default
+  [^PGobject x]
+  (.getValue x))
+
+;; Extend clojure.java.jdbc's protocol for interpreting ResultSet column values.
+(extend-protocol jdbc/IResultSetReadColumn
+  PGobject
+  (result-set-read-column [val _ _]
+    (read-pgobject val)))
 
 (defonce db-data
   (or (env/get-var :db)

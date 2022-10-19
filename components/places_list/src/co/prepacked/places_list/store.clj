@@ -1,8 +1,8 @@
 (ns co.prepacked.places-list.store
-  (:require
-   [clojure.java.jdbc :as jdbc]
-   [honey.sql :as sql]
-   [co.prepacked.database.interface-ns :as database]))
+  (:require [clojure.data.json :as json]
+            [clojure.java.jdbc :as jdbc]
+            [honey.sql :as sql]
+            [co.prepacked.database.interface-ns :as database]))
 
 (defn places-lists [con city-id]
   (let [query {:select [:*]
@@ -37,17 +37,19 @@
 (defn insert-places-list! [con input]
   (let [query {:insert-into [:places_list]
                :values [(-> input
-                            (select-keys [:user_id :city_id :slug :title :description :priority])
+                            (select-keys [:user_id :city_id :slug :title :description :priority :shown_features])
                             (update :user_id database/->uuid)
                             (update :city_id database/->uuid)
+                            (update :shown_features #(vector :cast (json/write-str %) :jsonb))
                             (database/add-now-timestamps [:created_at :updated_at]))]}]
     (jdbc/execute! con (sql/format query))))
 
 (defn update-places-list! [con id input]
   (let [query {:update :places_list
                :set    (-> input
-                           (select-keys [:city_id :slug :title :description :priority])
+                           (select-keys [:city_id :slug :title :description :priority :shown_features])
                            (update :city_id database/->uuid)
+                           (update :shown_features #(vector :cast (json/write-str %) :jsonb))
                            (database/add-now-timestamps [:updated_at]))
                :where  [:= :id [:cast id :uuid]]}]
     (jdbc/execute! con (sql/format query))))
