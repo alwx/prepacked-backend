@@ -47,7 +47,9 @@
    (to compile and to invoke)."
   [{:keys [project uber-file] :as opts}]
   (let [project-root (ensure-project-root "uberjar" project)
-        aliases      (with-dir (io/file project-root) (get-project-aliases))
+        aliases      (with-dir 
+                       (io/file project-root) 
+                       (get-project-aliases))
         main         (-> aliases :uberjar :main)]
     (when-not main
       (throw (ex-info (str "the " project " project's deps.edn file does not specify the :main namespace in its :uberjar alias")

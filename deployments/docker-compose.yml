@@ -1,0 +1,49 @@
+version: '2'
+
+services:
+  nginx-proxy:
+    restart: always
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "./letsencrypt/htpasswd:/etc/nginx/htpasswd"
+      - "./letsencrypt/vhost:/etc/nginx/vhost.d"
+      - "./letsencrypt/html:/usr/share/nginx/html"
+      - "./letsencrypt/certs:/etc/nginx/certs"
+      - "/var/run/docker.sock:/tmp/docker.sock:ro"
+
+  letsencrypt-nginx-proxy-companion:
+    restart: always
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    volumes_from:
+      - "nginx-proxy"
+
+  prepacked-backend:
+    restart: always
+    image: alwxdev/prepacked-backend:latest
+    depends_on:
+      - db-service
+    ports:
+      - "8001:8001"
+    environment:
+      - BASE_URL=https://prepacked.co
+      - VIRTUAL_HOST=prepacked.co
+      - LETSENCRYPT_HOST=prepacked.co
+      - LETSENCRYPT_EMAIL=support@prepacked.co
+      - VIRTUAL_PORT=8001
+
+  db-service:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../prepacked-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: prepacked-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: prepacked-password

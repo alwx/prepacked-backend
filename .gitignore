@@ -5,6 +5,7 @@
 **/.DS_Store
 **/.gradle
 **/.vscode
+**/.clj-kondo
 
 # User-specific stuff
 .idea/**/workspace.xml

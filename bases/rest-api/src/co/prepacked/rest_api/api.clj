@@ -1,5 +1,6 @@
 (ns co.prepacked.rest-api.api
-  (:require [muuntaja.core]
+  (:require [clojure.data.json :as json]
+            [muuntaja.core]
             [reitit.ring :as ring]
             [reitit.coercion.spec]
             [reitit.swagger :as swagger]
@@ -22,8 +23,20 @@
             [co.prepacked.user.spec :as user-spec]
             [co.prepacked.spec.interface-ns :as spec]))
 
+(def web-routes
+  ["/"
+   {:get {:handler (fn [_] {:status 200 :body "Prepacked for iOS and Android: coming soon."})}}])
+
 (def api-routes
   ["/api"
+   {:swagger {:id :prepacked-api}
+    :middleware [reitit.swagger/swagger-feature]}
+   
+   ["/swagger.json"
+    {:get {:no-doc true
+           :swagger {:info {:title "Prepacked API"
+                            :description "alwxdev.com"}}
+           :handler (swagger/create-swagger-handler)}}]
 
    ["/health"
     {:swagger {:tags ["health"]}
@@ -242,33 +255,35 @@
             :parameters {:body user-spec/update-user}
             :handler handler/update-user}}]]])
 
+(def exception-middleware
+  (exception/create-exception-middleware
+   (merge
+    exception/default-handlers
+    {::exception/wrap (fn [handler exception request]
+                        (update (handler exception request) :body json/write-str))})))
+
 (def app
   (ring/ring-handler
    (ring/router
-    [["/swagger.json"
-      {:get {:no-doc true
-             :swagger {:info {:title "Prepacked API"
-                              :description "alwxdev.com"}}
-             :handler (swagger/create-swagger-handler)}}]
+    [web-routes
      api-routes]
     {:exception pretty/exception
      :data {:coercion reitit.coercion.spec/coercion
             :muuntaja muuntaja.core/instance
-            :middleware [swagger/swagger-feature
-                         parameters/parameters-middleware
+            :middleware [muuntaja/format-response-middleware
                          muuntaja/format-negotiate-middleware
-                         muuntaja/format-response-middleware
-                         (exception/create-exception-middleware
-                          {::exception/default (partial exception/wrap-log-to-console exception/default-handler)})
-                         muuntaja/format-request-middleware
+                         parameters/parameters-middleware
+                         exception-middleware
                          coercion/coerce-response-middleware
                          coercion/coerce-request-middleware
+                         coercion/coerce-exceptions-middleware
                          multipart/multipart-middleware
                          middleware/wrap-auth-user
                          middleware/wrap-cors]}})
    (ring/routes
     (swagger-ui/create-swagger-ui-handler
-     {:path "/"
+     {:path "/api-docs"
+      :url "/api/swagger.json"
       :config {:validatorUrl nil
                :operationsSorter "alpha"}})
     (ring/create-default-handler

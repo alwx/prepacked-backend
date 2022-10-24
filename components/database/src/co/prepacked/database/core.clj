@@ -29,14 +29,14 @@
   (result-set-read-column [val _ _]
     (read-pgobject val)))
 
-(defonce db-data
+(defn db-data []
   (or (env/get-var :db)
       (do
         (log/warn "`:db` needs to be added to `env.edn`!")
         (System/exit 1))))
 
 (defn db []
-  (let [{:keys [dbname host port user password]} db-data]
+  (let [{:keys [dbname host port user password]} (db-data)]
     {:dbtype "postgresql"
      :dbname dbname
      :host host

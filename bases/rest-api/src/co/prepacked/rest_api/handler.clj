@@ -2,6 +2,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.spec.alpha :as s]
+   [clojure.data.json :as json]
    [co.prepacked.city.interface-ns :as city]
    [co.prepacked.env.interface-ns :as env]
    [co.prepacked.feature.interface-ns :as feature]
@@ -30,7 +31,8 @@
 (defn- handle
   ([status body]
    {:status status
-    :body   body})
+    :headers {"Content-Type" "application/json"}
+    :body   (json/write-str body)})
   ([status]
    (handle status nil)))
 
@@ -51,7 +53,7 @@
   (handle 200 (city/all-cities)))
 
 (defn city-with-all-dependencies [req]
-  (let [slug (-> req :parameters :path :slug)]
+  (let [slug (-> req :params :slug)]
     (if-let [{:keys [id] :as city} (city/city-by-slug slug)]
       (let [city' (assoc city
                          :places_lists (places-list/places-lists-with-all-dependencies id)
@@ -61,8 +63,8 @@
       (handle 404 {:errors {:city ["Cannot find the city."]}}))))
 
 (defn places-list-with-all-dependencies [req]
-  (let [slug (-> req :parameters :path :slug)
-        places-list-slug (-> req :parameters :path :places_list_slug)
+  (let [slug (-> req :params :slug)
+        places-list-slug (-> req :params :places_list_slug)
         [_ res] (places-list/places-list-with-all-dependencies slug places-list-slug)]
     (handle-result res)))
 

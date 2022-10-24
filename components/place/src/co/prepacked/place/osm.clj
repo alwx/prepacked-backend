@@ -17,32 +17,21 @@
         param))
     param))
 
-(defn- osm-server-base-url []
-  (or (env/get-var :osm-server-base-url)
+(defn- osm []
+  (or (env/get-var :osm)
       (do
-        (log/warn "`:osm-server-base-url` needs to be added to `env.edn`!")
-        (System/exit 1))))
-
-(defn- osm-server-user-agent []
-  (or (env/get-var :osm-server-user-agent)
-      (do
-        (log/warn "`:osm-server-user-agent` needs to be added to `env.edn`!")
-        (System/exit 1))))
-
-(defn- osm-server-email []
-  (or (env/get-var :osm-server-email)
-      (do
-        (log/warn "`:osm-server-user-agent` needs to be added to `env.edn`!")
+        (log/warn "`:osm` needs to be added to `env.edn`!")
         (System/exit 1))))
 
 (defn request-place-osm-data [place]
-  (let [url (str (osm-server-base-url) "/search")
+  (let [{:keys [base-url user-agent email]} (osm)
+        url (str base-url "/search")
         params {:accept :json
-                :headers {"User-Agent" (osm-server-user-agent)}
+                :headers {"User-Agent" user-agent}
                 :query-params {"q" (:address place)
                                "format" "json"
                                "addressdetails" "1"
-                               "email" (osm-server-email)}
+                               "email" email}
                 :as :json-kebab-keys
                 :throw-exceptions false}
         osm-object (-> (client/get url params)

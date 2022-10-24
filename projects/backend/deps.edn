@@ -5,17 +5,18 @@
         poly/file {:local/root "../../components/file"}
         poly/log {:local/root "../../components/log"}
         poly/navbar-item {:local/root "../../components/navbar_item"}
-        poly/places-list {:local/root "../../components/places_list"}
         poly/place {:local/root "../../components/place"}
+        poly/places-list {:local/root "../../components/places_list"}
         poly/spec {:local/root "../../components/spec"}
         poly/static-page  {:local/root "../../components/static_page"}
         poly/user {:local/root "../../components/user"}
 
         poly/rest-api {:local/root "../../bases/rest-api"}
 
-        org.clojure/clojure {:mvn/version "1.10.1"}
-        org.clojure/tools.deps.alpha {:mvn/version "0.12.985"}}
+        org.clojure/clojure {:mvn/version "1.11.1"}}
 
  :aliases {:test {:extra-paths []
-                  :extra-deps  {}}
-           :uberjar {:main co.prepacked.rest-api.main}}}
+                  :extra-deps  {}} 
+           :uberjar {:main co.prepacked.rest-api.main}
+           :jib {:aot true
+                 :main-opts ["-m" "co.prepacked.rest-api.main"]}}}
