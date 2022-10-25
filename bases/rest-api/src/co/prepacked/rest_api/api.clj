@@ -29,8 +29,7 @@
 
 (def api-routes
   ["/api"
-   {:swagger {:id :prepacked-api}
-    :middleware [reitit.swagger/swagger-feature]}
+   {:swagger {:id :prepacked-api}}
    
    ["/swagger.json"
     {:get {:no-doc true
@@ -270,13 +269,11 @@
     {:exception pretty/exception
      :data {:coercion reitit.coercion.spec/coercion
             :muuntaja muuntaja.core/instance
-            :middleware [muuntaja/format-response-middleware
-                         muuntaja/format-negotiate-middleware
+            :middleware [reitit.swagger/swagger-feature
                          parameters/parameters-middleware
+                         muuntaja/format-middleware
                          exception-middleware
-                         coercion/coerce-response-middleware
                          coercion/coerce-request-middleware
-                         coercion/coerce-exceptions-middleware
                          multipart/multipart-middleware
                          middleware/wrap-auth-user
                          middleware/wrap-cors]}})

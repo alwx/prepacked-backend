@@ -1,5 +1,5 @@
 VERSION = 1
-IMAGE_NAME = alwxdev/prepacked-backend:$(VERSION)
+IMAGE_NAME = alwxdev/prepacked-backend
 
 development-deps-up:
 	docker-compose -f deployments/docker-compose.development.yml up --build
@@ -11,5 +11,6 @@ uberjar:
 	clojure -T:build uberjar :project backend
 
 build-docker-image:
-	docker build --platform linux/amd64 --rm -t $(IMAGE_NAME) -f Dockerfile .
-	docker push $(IMAGE_NAME)
+	docker build --platform linux/amd64 --rm -t $(IMAGE_NAME):$(VERSION) -t $(IMAGE_NAME):latest -f Dockerfile .
+	docker push $(IMAGE_NAME):$(VERSION)
+	docker push $(IMAGE_NAME):latest

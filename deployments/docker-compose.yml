@@ -29,10 +29,12 @@ services:
       - db-service
     ports:
       - "8001:8001"
+    volumes:
+      - "./data:/etc/prepacked"
     environment:
       - BASE_URL=https://prepacked.co
-      - VIRTUAL_HOST=prepacked.co
-      - LETSENCRYPT_HOST=prepacked.co
+      - VIRTUAL_HOST=prepacked.co,viennaprepacked.com
+      - LETSENCRYPT_HOST=prepacked.co,viennaprepacked.com
       - LETSENCRYPT_EMAIL=support@prepacked.co
       - VIRTUAL_PORT=8001
 

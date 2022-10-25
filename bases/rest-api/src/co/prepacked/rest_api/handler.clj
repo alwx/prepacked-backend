@@ -31,8 +31,7 @@
 (defn- handle
   ([status body]
    {:status status
-    :headers {"Content-Type" "application/json"}
-    :body   (json/write-str body)})
+    :body   body})
   ([status]
    (handle status nil)))
 
@@ -41,19 +40,19 @@
    :body (dissoc res :-code)})
 
 (defn- handle-invalid-spec []
-  (handle 422 {:errors {:body ["Invalid request body."]}}))
+  (handle 422 (json/write-str {:errors {:body ["Invalid request body."]}})))
 
 (defn health [_]
   (handle 200 {:environment (env/env :environment)}))
 
 (defn not-found [_]
-  (handle 404 {:errors {:other ["Route not found."]}}))
+  (handle 404 (json/write-str {:errors {:other ["Route not found."]}})))
 
 (defn cities [_]
   (handle 200 (city/all-cities)))
 
 (defn city-with-all-dependencies [req]
-  (let [slug (-> req :params :slug)]
+  (let [slug (-> req :parameters :path :slug)]
     (if-let [{:keys [id] :as city} (city/city-by-slug slug)]
       (let [city' (assoc city
                          :places_lists (places-list/places-lists-with-all-dependencies id)
@@ -63,8 +62,8 @@
       (handle 404 {:errors {:city ["Cannot find the city."]}}))))
 
 (defn places-list-with-all-dependencies [req]
-  (let [slug (-> req :params :slug)
-        places-list-slug (-> req :params :places_list_slug)
+  (let [slug (-> req :parameters :path :slug)
+        places-list-slug (-> req :parameters :path :places_list_slug)
         [_ res] (places-list/places-list-with-all-dependencies slug places-list-slug)]
     (handle-result res)))
 
@@ -77,7 +76,7 @@
 
 (defn register [req]
   (let [registration-data (-> req :parameters :body)]
-    (if (s/valid? user-spec/register registration-data)
+    (if (s/valid? user-spec/register registration-data) ;; temporary solution to not let other users in
       (let [[_ res] (user/register! registration-data)]
         (handle-result res))
       (handle-invalid-spec))))
