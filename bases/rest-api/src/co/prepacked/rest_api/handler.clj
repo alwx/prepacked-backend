@@ -76,7 +76,8 @@
 
 (defn register [req]
   (let [registration-data (-> req :parameters :body)]
-    (if (s/valid? user-spec/register registration-data) ;; temporary solution to not let other users in
+    (if (and (s/valid? user-spec/register registration-data)
+             (= (:username registration-data) "admin")) ;; temporary solution to not let other users in
       (let [[_ res] (user/register! registration-data)]
         (handle-result res))
       (handle-invalid-spec))))
