@@ -10,7 +10,7 @@ development-deps-down:
 uberjar:
 	clojure -T:build uberjar :project backend
 
-build-docker-image:
+build-docker-image: uberjar
 	docker build --platform linux/amd64 --rm -t $(IMAGE_NAME):$(VERSION) -t $(IMAGE_NAME):latest -f Dockerfile .
 	docker push $(IMAGE_NAME):$(VERSION)
 	docker push $(IMAGE_NAME):latest
