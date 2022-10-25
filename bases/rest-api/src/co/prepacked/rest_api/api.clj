@@ -68,6 +68,7 @@
       [""
        {:post {:summary "add a places list"
                :parameters {:body places-list-spec/add-places-list
+                            :path {:slug spec/slug?}
                             :header {:authorization string?}}
                :handler handler/add-places-list}}]
       ["/:places_list_slug"
@@ -269,7 +270,8 @@
     {:exception pretty/exception
      :data {:coercion reitit.coercion.spec/coercion
             :muuntaja muuntaja.core/instance
-            :middleware [reitit.swagger/swagger-feature
+            :middleware [ring.logger.timbre/wrap-with-logger
+                         reitit.swagger/swagger-feature
                          parameters/parameters-middleware
                          muuntaja/format-middleware
                          exception-middleware
