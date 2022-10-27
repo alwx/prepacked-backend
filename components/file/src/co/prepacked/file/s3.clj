@@ -32,7 +32,7 @@
       (create-bucket cred bucket))
     (s3/put-object
      cred
-     ;; :access-control-list {:grant-permission ["AllUsers" "Read"]}
+     :canned-acl :public-read
      :bucket-name bucket
      :input-stream stream
      :key filename)))
