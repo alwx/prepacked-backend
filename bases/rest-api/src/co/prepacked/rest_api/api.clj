@@ -23,12 +23,8 @@
             [co.prepacked.user.spec :as user-spec]
             [co.prepacked.spec.interface-ns :as spec]))
 
-(def web-routes
-  ["/"
-   {:get {:handler (fn [_] {:status 200 :body "Prepacked for iOS and Android: coming soon."})}}])
-
 (def api-routes
-  ["/api"
+  [""
    {:swagger {:id :prepacked-api}}
    
    ["/swagger.json"
@@ -265,8 +261,7 @@
 (def app
   (ring/ring-handler
    (ring/router
-    [web-routes
-     api-routes]
+    [api-routes]
     {:exception pretty/exception
      :data {:coercion reitit.coercion.spec/coercion
             :muuntaja muuntaja.core/instance
@@ -282,7 +277,7 @@
    (ring/routes
     (swagger-ui/create-swagger-ui-handler
      {:path "/api-docs"
-      :url "/api/swagger.json"
+      :url "../swagger.json"
       :config {:validatorUrl nil
                :operationsSorter "alpha"}})
     (ring/create-default-handler

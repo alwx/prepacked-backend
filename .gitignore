@@ -6,6 +6,7 @@
 **/.gradle
 **/.vscode
 **/.clj-kondo
+**/.idea
 
 # User-specific stuff
 .idea/**/workspace.xml

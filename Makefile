@@ -1,4 +1,4 @@
-VERSION = 4
+VERSION = 5
 IMAGE_NAME = alwxdev/prepacked-backend
 
 development-deps-up:
