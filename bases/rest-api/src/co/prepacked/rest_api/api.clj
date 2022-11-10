@@ -12,6 +12,7 @@
             [reitit.ring.middleware.multipart :as multipart]
             [reitit.ring.middleware.parameters :as parameters]
             [ring.logger.timbre]
+            [ring.middleware.cors :refer [wrap-cors]]
             [co.prepacked.rest-api.handler :as handler]
             [co.prepacked.rest-api.middleware :as middleware]
             [co.prepacked.feature.spec :as feature-spec]
@@ -251,12 +252,17 @@
             :parameters {:body user-spec/update-user}
             :handler handler/update-user}}]]])
 
-(def exception-middleware
+(def ^:private exception-middleware
   (exception/create-exception-middleware
    (merge
     exception/default-handlers
     {::exception/wrap (fn [handler exception request]
                         (update (handler exception request) :body json/write-str))})))
+
+(def ^:private cors-middleware
+  [wrap-cors
+   :access-control-allow-origin [#".*"]
+   :access-control-allow-methods [:delete :get :patch :put :post]])
 
 (def app
   (ring/ring-handler
@@ -265,15 +271,15 @@
     {:exception pretty/exception
      :data {:coercion reitit.coercion.spec/coercion
             :muuntaja muuntaja.core/instance
-            :middleware [ring.logger.timbre/wrap-with-logger
+            :middleware [cors-middleware
+                         ring.logger.timbre/wrap-with-logger
                          reitit.swagger/swagger-feature
                          parameters/parameters-middleware
                          muuntaja/format-middleware
                          exception-middleware
                          coercion/coerce-request-middleware
                          multipart/multipart-middleware
-                         middleware/wrap-auth-user
-                         middleware/wrap-cors]}})
+                         middleware/wrap-auth-user]}})
    (ring/routes
     (swagger-ui/create-swagger-ui-handler
      {:path "/api-docs"
