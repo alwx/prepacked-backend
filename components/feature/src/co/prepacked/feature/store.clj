@@ -1,7 +1,14 @@
 (ns co.prepacked.feature.store
   (:require
-   [clojure.java.jdbc :as jdbc]
-   [honey.sql :as sql]))
+    [clojure.java.jdbc :as jdbc]
+    [honey.sql :as sql]
+    [co.prepacked.database.interface-ns :as database]))
+
+(defn all-features []
+  (let [query {:select [:*]
+               :from   [:feature]}
+        results (jdbc/query (database/db) (sql/format query))]
+    results))
 
 (defn find-by [con key value]
   (let [query {:select [:*]
@@ -16,14 +23,14 @@
 (defn insert-feature! [con input]
   (let [query {:insert-into [:feature]
                :values [(-> input
-                            (select-keys [:id :title :icon]))]}
+                          (select-keys [:id :title :icon]))]}
         result (jdbc/execute! con (sql/format query) {:return-keys ["id"]})]
     (:id result)))
 
 (defn update-feature! [con id input]
   (let [query {:update :feature
                :set    (-> input
-                           (select-keys [:id :title :icon]))
+                         (select-keys [:id :title :icon]))
                :where  [:= :id id]}]
     (jdbc/execute! con (sql/format query))))
 

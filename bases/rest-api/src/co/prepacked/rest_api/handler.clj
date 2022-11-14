@@ -1,24 +1,24 @@
 (ns co.prepacked.rest-api.handler
   (:require
-   [clojure.edn :as edn]
-   [clojure.spec.alpha :as s]
-   [clojure.data.json :as json]
-   [co.prepacked.city.interface-ns :as city]
-   [co.prepacked.env.interface-ns :as env]
-   [co.prepacked.feature.interface-ns :as feature]
-   [co.prepacked.feature.spec :as feature-spec]
-   [co.prepacked.file.interface-ns :as file]
-   [co.prepacked.file.spec :as file-spec]
-   [co.prepacked.navbar-item.interface-ns :as navbar-item]
-   [co.prepacked.navbar-item.spec :as navbar-item-spec]
-   [co.prepacked.place.interface-ns :as place]
-   [co.prepacked.place.spec :as place-spec]
-   [co.prepacked.places-list.interface-ns :as places-list]
-   [co.prepacked.places-list.spec :as places-list-spec]
-   [co.prepacked.static-page.interface-ns :as static-page]
-   [co.prepacked.static-page.spec :as static-page-spec]
-   [co.prepacked.user.interface-ns :as user]
-   [co.prepacked.user.spec :as user-spec]))
+    [clojure.edn :as edn]
+    [clojure.spec.alpha :as s]
+    [clojure.data.json :as json]
+    [co.prepacked.city.interface-ns :as city]
+    [co.prepacked.env.interface-ns :as env]
+    [co.prepacked.feature.interface-ns :as feature]
+    [co.prepacked.feature.spec :as feature-spec]
+    [co.prepacked.file.interface-ns :as file]
+    [co.prepacked.file.spec :as file-spec]
+    [co.prepacked.navbar-item.interface-ns :as navbar-item]
+    [co.prepacked.navbar-item.spec :as navbar-item-spec]
+    [co.prepacked.place.interface-ns :as place]
+    [co.prepacked.place.spec :as place-spec]
+    [co.prepacked.places-list.interface-ns :as places-list]
+    [co.prepacked.places-list.spec :as places-list-spec]
+    [co.prepacked.static-page.interface-ns :as static-page]
+    [co.prepacked.static-page.spec :as static-page-spec]
+    [co.prepacked.user.interface-ns :as user]
+    [co.prepacked.user.spec :as user-spec]))
 
 (defn parse-query-param [param]
   (if (string? param)
@@ -55,9 +55,9 @@
   (let [slug (-> req :parameters :path :slug)]
     (if-let [{:keys [id] :as city} (city/city-by-slug slug)]
       (let [city' (assoc city
-                         :places_lists (places-list/places-lists-with-all-dependencies id)
-                         :static_pages (static-page/static-pages id)
-                         :navbar_items (navbar-item/navbar-items id))]
+                    :places_lists (places-list/places-lists-with-all-dependencies id)
+                    :static_pages (static-page/static-pages id)
+                    :navbar_items (navbar-item/navbar-items id))]
         (handle 200 {:city city'}))
       (handle 404 {:errors {:city ["Cannot find the city."]}}))))
 
@@ -77,10 +77,13 @@
 (defn register [req]
   (let [registration-data (-> req :parameters :body)]
     (if (and (s/valid? user-spec/register registration-data)
-             (= (:username registration-data) "admin")) ;; temporary solution to not let other users in
+          (= (:username registration-data) "admin")) ;; temporary solution to not let other users in
       (let [[_ res] (user/register! registration-data)]
         (handle-result res))
       (handle-invalid-spec))))
+
+(defn features [_]
+  (handle 200 (feature/all-features)))
 
 (defn add-feature [req]
   (let [feature-data (-> req :parameters :body)]
@@ -102,6 +105,8 @@
         [_ res] (feature/delete-feature! feature-id)]
     (handle-result res)))
 
+(defn places [_]
+  (handle 200 (place/all-places)))
 
 (defn add-place [req]
   (let [auth-user (-> req :auth-user)
@@ -152,7 +157,7 @@
   (let [place-id (-> req :parameters :path :place_id)
         auth-user (-> req :auth-user)
         params (-> req :parameters :multipart
-                   (update :priority parse-query-param))]
+                 (update :priority parse-query-param))]
     (if (s/valid? place-spec/upload-file-for-place params)
       (let [[_ res] (place/handle-file-upload! auth-user place-id params)]
         (handle-result res))
@@ -242,7 +247,7 @@
         places-list-slug (-> req :parameters :path :places_list_slug)
         auth-user (-> req :auth-user)
         params (-> req :parameters :multipart
-                   (update :priority parse-query-param))]
+                 (update :priority parse-query-param))]
     (if (s/valid? places-list-spec/upload-file-for-places-list params)
       (let [[_ res] (places-list/handle-file-upload! auth-user slug places-list-slug params)]
         (handle-result res))

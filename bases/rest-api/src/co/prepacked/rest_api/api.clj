@@ -1,28 +1,29 @@
 (ns co.prepacked.rest-api.api
-  (:require [clojure.data.json :as json]
-            [muuntaja.core]
-            [reitit.ring :as ring]
-            [reitit.coercion.spec]
-            [reitit.swagger :as swagger]
-            [reitit.swagger-ui :as swagger-ui]
-            [reitit.ring.coercion :as coercion]
-            [reitit.dev.pretty :as pretty]
-            [reitit.ring.middleware.muuntaja :as muuntaja]
-            [reitit.ring.middleware.exception :as exception]
-            [reitit.ring.middleware.multipart :as multipart]
-            [reitit.ring.middleware.parameters :as parameters]
-            [ring.logger.timbre]
-            [ring.middleware.cors :refer [wrap-cors]]
-            [co.prepacked.rest-api.handler :as handler]
-            [co.prepacked.rest-api.middleware :as middleware]
-            [co.prepacked.feature.spec :as feature-spec]
-            [co.prepacked.file.spec :as file-spec]
-            [co.prepacked.navbar-item.spec :as navbar-item-spec]
-            [co.prepacked.place.spec :as place-spec]
-            [co.prepacked.places-list.spec :as places-list-spec]
-            [co.prepacked.static-page.spec :as static-page-spec]
-            [co.prepacked.user.spec :as user-spec]
-            [co.prepacked.spec.interface-ns :as spec]))
+  (:require 
+    [clojure.data.json :as json]
+    [muuntaja.core]
+    [reitit.ring :as ring]
+    [reitit.coercion.spec]
+    [reitit.swagger :as swagger]
+    [reitit.swagger-ui :as swagger-ui]
+    [reitit.ring.coercion :as coercion]
+    [reitit.dev.pretty :as pretty]
+    [reitit.ring.middleware.muuntaja :as muuntaja]
+    [reitit.ring.middleware.exception :as exception]
+    [reitit.ring.middleware.multipart :as multipart]
+    [reitit.ring.middleware.parameters :as parameters]
+    [ring.logger.timbre]
+    [ring.middleware.cors :refer [wrap-cors]]
+    [co.prepacked.rest-api.handler :as handler]
+    [co.prepacked.rest-api.middleware :as middleware]
+    [co.prepacked.feature.spec :as feature-spec]
+    [co.prepacked.file.spec :as file-spec]
+    [co.prepacked.navbar-item.spec :as navbar-item-spec]
+    [co.prepacked.place.spec :as place-spec]
+    [co.prepacked.places-list.spec :as places-list-spec]
+    [co.prepacked.static-page.spec :as static-page-spec]
+    [co.prepacked.user.spec :as user-spec]
+    [co.prepacked.spec.interface-ns :as spec]))
 
 (def api-routes
   [""
@@ -174,7 +175,9 @@
                  :parameters {:header {:authorization string?}}
                  :swagger {:tags ["features"]}}
     [""
-     {:post {:summary "create a new feature"
+     {:get {:summary "get all features"
+            :handler handler/features}
+      :post {:summary "create a new feature"
              :parameters {:body feature-spec/add-feature}
              :handler handler/add-feature}}]
     ["/:feature_id"
@@ -190,7 +193,9 @@
                :parameters {:header {:authorization string?}}
                :swagger {:tags ["places"]}}
     [""
-     {:post {:summary "create a new place"
+     {:get {:summary "get all places"
+            :handler handler/places}
+      :post {:summary "create a new place"
              :parameters {:body place-spec/add-place}
              :handler handler/add-place}}]
     ["/:place_id"
@@ -254,10 +259,10 @@
 
 (def ^:private exception-middleware
   (exception/create-exception-middleware
-   (merge
-    exception/default-handlers
-    {::exception/wrap (fn [handler exception request]
-                        (update (handler exception request) :body json/write-str))})))
+    (merge
+      exception/default-handlers
+      {::exception/wrap (fn [handler exception request]
+                          (update (handler exception request) :body json/write-str))})))
 
 (def ^:private cors-middleware
   [wrap-cors
@@ -266,25 +271,25 @@
 
 (def app
   (ring/ring-handler
-   (ring/router
-    [api-routes]
-    {:exception pretty/exception
-     :data {:coercion reitit.coercion.spec/coercion
-            :muuntaja muuntaja.core/instance
-            :middleware [cors-middleware
-                         ring.logger.timbre/wrap-with-logger
-                         reitit.swagger/swagger-feature
-                         parameters/parameters-middleware
-                         muuntaja/format-middleware
-                         exception-middleware
-                         coercion/coerce-request-middleware
-                         multipart/multipart-middleware
-                         middleware/wrap-auth-user]}})
-   (ring/routes
-    (swagger-ui/create-swagger-ui-handler
-     {:path "/api-docs"
-      :url "../swagger.json"
-      :config {:validatorUrl nil
-               :operationsSorter "alpha"}})
-    (ring/create-default-handler
-     {:not-found handler/not-found}))))
+    (ring/router
+      [api-routes]
+      {:exception pretty/exception
+       :data {:coercion reitit.coercion.spec/coercion
+              :muuntaja muuntaja.core/instance
+              :middleware [cors-middleware
+                           ring.logger.timbre/wrap-with-logger
+                           reitit.swagger/swagger-feature
+                           parameters/parameters-middleware
+                           muuntaja/format-middleware
+                           exception-middleware
+                           coercion/coerce-request-middleware
+                           multipart/multipart-middleware
+                           middleware/wrap-auth-user]}})
+    (ring/routes
+      (swagger-ui/create-swagger-ui-handler
+        {:path "/api-docs"
+         :url "../swagger.json"
+         :config {:validatorUrl nil
+                  :operationsSorter "alpha"}})
+      (ring/create-default-handler
+        {:not-found handler/not-found}))))

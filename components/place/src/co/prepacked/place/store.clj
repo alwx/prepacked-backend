@@ -4,6 +4,12 @@
    [honey.sql :as sql]
    [co.prepacked.database.interface-ns :as database]))
 
+(defn all-places []
+  (let [query {:select [:*]
+               :from   [:place]}
+        results (jdbc/query (database/db) (sql/format query))]
+    results))
+
 (defn places [con city-id places-list-id]
   (let [query {:select [:place.* :places_list_place.comment]
                :from [[:place]]

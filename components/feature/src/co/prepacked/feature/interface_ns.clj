@@ -2,6 +2,8 @@
   (:require
    [co.prepacked.feature.core :as core]))
 
+(def all-features core/all-features)
+
 (defn feature-by-id [con id]
   (core/feature-by-id con id))
 

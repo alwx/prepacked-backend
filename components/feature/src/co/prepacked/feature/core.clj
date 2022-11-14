@@ -3,6 +3,9 @@
             [co.prepacked.database.interface-ns :as database]
             [co.prepacked.feature.store :as store]))
 
+(defn all-features []
+  (store/all-features))
+
 (defn feature-by-id [con id]
   (store/find-by-id con id))
 

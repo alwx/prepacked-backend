@@ -1,22 +1,26 @@
 (ns co.prepacked.place.core
-  (:require [clojure.java.jdbc :as jdbc]
-            [co.prepacked.database.interface-ns :as database]
-            [co.prepacked.feature.interface-ns :as feature]
-            [co.prepacked.file.interface-ns :as file]
-            [co.prepacked.place.osm :as osm]
-            [co.prepacked.place.store :as store]))
+  (:require 
+    [clojure.java.jdbc :as jdbc]
+    [co.prepacked.database.interface-ns :as database]
+    [co.prepacked.feature.interface-ns :as feature]
+    [co.prepacked.file.interface-ns :as file]
+    [co.prepacked.place.osm :as osm]
+    [co.prepacked.place.store :as store]))
+
+(defn all-places []
+  (store/all-places))
 
 (defn places-with-all-dependencies [con city-id places-list-id]
   (let [places (store/places con city-id places-list-id)
         features (->> (store/places-list-features con places-list-id)
-                      (group-by :place_id))
-        files (->> (store/places-list-files con places-list-id)
                    (group-by :place_id))
+        files (->> (store/places-list-files con places-list-id)
+                (group-by :place_id))
         places' (->> places
-                     (mapv (fn [{:keys [id] :as place}]
-                             (assoc place
-                                    :features (get features id [])
-                                    :files (get files id [])))))]
+                  (mapv (fn [{:keys [id] :as place}]
+                          (assoc place
+                            :features (get features id [])
+                            :files (get files id [])))))]
     [true places']))
 
 (defn place-by-id [con id]
@@ -37,8 +41,8 @@
       (let [osm-data (when (not= (:address old-place-data) (:address place-data))
                        (osm/request-place-osm-data place-data))
             place-data' (merge old-place-data
-                               place-data
-                               osm-data)]
+                          place-data
+                          osm-data)]
         (store/update-place! con place-id place-data')
         (if-let [place (store/find-by-id con place-id)]
           [true place]

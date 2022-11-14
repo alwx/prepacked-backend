@@ -1,6 +1,8 @@
 (ns co.prepacked.place.interface-ns
   (:require
-   [co.prepacked.place.core :as core]))
+    [co.prepacked.place.core :as core]))
+
+(def all-places core/all-places)
 
 (def places-with-all-dependencies core/places-with-all-dependencies)
 
