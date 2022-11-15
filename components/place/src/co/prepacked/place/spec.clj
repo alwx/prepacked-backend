@@ -4,6 +4,10 @@
    [spec-tools.data-spec :as ds]
    [co.prepacked.spec.interface-ns :as spec]))
 
+(def fetch-osm-data
+  (ds/spec {:name :core/fetch-osm-data
+            :spec {:address spec/non-empty-string?}}))
+
 (def add-place
   (ds/spec {:name :core/add-place
             :spec {:address spec/non-empty-string?

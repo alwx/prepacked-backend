@@ -26,10 +26,12 @@
 (defn place-by-id [con id]
   (store/find-by-id con id))
 
+(defn fetch-osm-data [address]
+  (osm/request-place-osm-data address))
+
 (defn add-place! [auth-user place-data]
   (jdbc/with-db-transaction [con (database/db)]
-    (let [osm-data (osm/request-place-osm-data place-data)
-          place-data' (merge place-data osm-data {:user_id (:id auth-user)})
+    (let [place-data' (merge place-data {:user_id (:id auth-user)})
           place-id (store/insert-place! con place-data')]
       (if-let [place (store/find-by-id con place-id)]
         [true place]
@@ -38,11 +40,7 @@
 (defn update-place! [place-id place-data]
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [old-place-data (store/find-by-id con place-id)]
-      (let [osm-data (when (not= (:address old-place-data) (:address place-data))
-                       (osm/request-place-osm-data place-data))
-            place-data' (merge old-place-data
-                          place-data
-                          osm-data)]
+      (let [place-data' (merge old-place-data place-data)]
         (store/update-place! con place-id place-data')
         (if-let [place (store/find-by-id con place-id)]
           [true place]

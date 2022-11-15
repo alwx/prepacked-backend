@@ -105,6 +105,12 @@
         [_ res] (feature/delete-feature! feature-id)]
     (handle-result res)))
 
+(defn fetch-osm-data [req]
+  (let [body (-> req :parameters :body)]
+    (if (s/valid? place-spec/fetch-osm-data body)
+      (handle-result (place/fetch-osm-data (:address body)))
+      (handle-invalid-spec))))
+
 (defn places [_]
   (handle 200 (place/all-places)))
 

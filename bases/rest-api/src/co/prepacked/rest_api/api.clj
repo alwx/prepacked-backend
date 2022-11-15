@@ -68,6 +68,7 @@
                :parameters {:body places-list-spec/add-places-list
                             :path {:slug spec/slug?}
                             :header {:authorization string?}}
+               :middleware [middleware/wrap-authorization]
                :handler handler/add-places-list}}]
       ["/:places_list_slug"
        [""
@@ -78,11 +79,13 @@
          :put {:summary "update a places list"
                :parameters {:body places-list-spec/update-places-list
                             :header {:authorization string?}}
+               :middleware [middleware/wrap-authorization]
                :handler handler/edit-places-list}
          :delete {:summary "delete a places list"
                   :parameters {:header {:authorization string?}}
+                  :middleware [middleware/wrap-authorization]
                   :handler handler/delete-places-list}}]
-       ["/files"
+       ["/files" {:middleware [middleware/wrap-authorization]}
         [""
          {:parameters {:path {:slug spec/slug?
                               :places_list_slug spec/slug?}
@@ -100,7 +103,7 @@
                 :handler handler/edit-places-list-file}
           :delete {:summary "deletes a file from a specified list of places"
                    :handler handler/delete-places-list-file}}]]
-       ["/features"
+       ["/features" {:middleware [middleware/wrap-authorization]}
         [""
          {:parameters {:path {:slug spec/slug?
                               :places_list_slug spec/slug?}
@@ -120,7 +123,7 @@
                    :handler handler/delete-places-list-feature}}]]
        
 
-       ["/places"
+       ["/places" {:middleware [middleware/wrap-authorization]}
         [""
          {:parameters {:path {:slug spec/slug?
                               :places_list_slug spec/slug?}
@@ -139,7 +142,7 @@
           :delete {:summary "deletes a place from a specified list of places"
                    :handler handler/delete-places-list-place}}]]]]
 
-     ["/static-pages"
+     ["/static-pages" {:middleware [middleware/wrap-authorization]}
       [""
        {:post {:summary "add a static page"
                :parameters {:body static-page-spec/add-static-page
@@ -155,7 +158,7 @@
         :delete {:summary "delete a static page"
                  :handler handler/delete-static-page}}]]
      
-     ["/navbar-items"
+     ["/navbar-items" {:middleware [middleware/wrap-authorization]}
       [""
        {:post {:summary "add a navbar item"
                :parameters {:body navbar-item-spec/add-navbar-item
@@ -189,9 +192,18 @@
                :parameters {:path {:feature_id spec/slug?}}
                :handler handler/delete-feature}}]]
 
-   ["/places" {:middleware [middleware/wrap-authorization]
-               :parameters {:header {:authorization string?}}
-               :swagger {:tags ["places"]}}
+   ["/fetch-osm-data" {:middleware [middleware/wrap-authorization]
+     :parameters {:header {:authorization string?}}
+     :swagger {:tags ["places"]}}
+    [""
+     {:post {:summary "sends a request to OSM provider to fetch data about a specific address"
+            :parameters {:body place-spec/fetch-osm-data}
+            :handler handler/places}}]]
+   
+   ["/places" 
+    {:middleware [middleware/wrap-authorization]
+     :parameters {:header {:authorization string?}}
+     :swagger {:tags ["places"]}}
     [""
      {:get {:summary "get all places"
             :handler handler/places}
@@ -262,7 +274,7 @@
     (merge
       exception/default-handlers
       {::exception/wrap (fn [handler exception request]
-                          (update (handler exception request) :body json/write-str))})))
+                          (assoc (handler exception request) :body json/write-str))})))
 
 (def ^:private cors-middleware
   [wrap-cors

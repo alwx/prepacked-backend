@@ -8,6 +8,8 @@
 
 (def place-by-id core/place-by-id)
 
+(def fetch-osm-data core/fetch-osm-data)
+
 (def add-place! core/add-place!)
 
 (def update-place! core/update-place!)

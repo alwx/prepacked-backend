@@ -23,12 +23,12 @@
         (log/warn "`:osm` needs to be added to `env.edn`!")
         (System/exit 1))))
 
-(defn request-place-osm-data [place]
+(defn request-place-osm-data [address]
   (let [{:keys [base-url user-agent email]} (osm)
         url (str base-url "/search")
         params {:accept :json
                 :headers {"User-Agent" user-agent}
-                :query-params {"q" (:address place)
+                :query-params {"q" address
                                "format" "json"
                                "addressdetails" "1"
                                "email" email}
