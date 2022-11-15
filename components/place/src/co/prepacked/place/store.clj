@@ -114,7 +114,7 @@
 ;; files
 
 (defn places-list-files [con places-list-id]
-  (let [query {:select [:place_file.* :file.server_url :file.link]
+  (let [query {:select [:place_file.* :file.server_url :file.link :file.copyright]
                :from [[:place_file]]
                :join [[:file] [:= :file.id :place_file.file_id]
                       [:place] [:= :place.id :place_file.place_id]
@@ -125,7 +125,7 @@
     results))
 
 (defn place-files [con place-id]
-  (let [query {:select [:place_file.* :file.server_url :file.link]
+  (let [query {:select [:place_file.* :file.server_url :file.link :file.copyright]
                :from [[:place_file]]
                :join [[:file] [:= :file.id :place_file.file_id]]
                :where [:= :place_file.place_id [:cast place-id :uuid]]

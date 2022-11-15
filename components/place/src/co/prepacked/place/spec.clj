@@ -56,7 +56,8 @@
 
 (def update-feature-in-place
   (ds/spec {:name :core/update-feature-in-place
-            :spec {:value string?
+            :spec {:feature_id spec/slug?
+                   :value string?
                    :priority int?}}))
 
 ;; operations with `place-files`
