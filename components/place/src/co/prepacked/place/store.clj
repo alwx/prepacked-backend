@@ -5,8 +5,9 @@
    [co.prepacked.database.interface-ns :as database]))
 
 (defn all-places []
-  (let [query {:select [:*]
-               :from   [:place]}
+  (let [query {:select [:place.*]
+               :from   [:place]
+               :order-by [[:place.priority :desc]]}
         results (jdbc/query (database/db) (sql/format query))]
     results))
 
@@ -19,17 +20,6 @@
                        [:= :places_list.city_id [:cast city-id :uuid]]
                        [:= :places_list.id [:cast places-list-id :uuid]]]
                :order-by [[:place.priority :desc]]}
-        results (jdbc/query con (sql/format query))]
-    results))
-
-(defn places-list-files [con places-list-id]
-  (let [query {:select [:place_file.* :file.server_url :file.link]
-               :from [[:place_file]]
-               :join [[:file] [:= :file.id :place_file.file_id]
-                      [:place] [:= :place.id :place_file.place_id]
-                      [:places_list_place] [:= :places_list_place.place_id :place.id]]
-               :where [:= :places_list_place.places_list_id [:cast places-list-id :uuid]]
-               :order-by [[:place_file.priority :desc]]}
         results (jdbc/query con (sql/format query))]
     results))
 
@@ -70,6 +60,8 @@
                :where [:= :id [:cast id :uuid]]}]
     (jdbc/execute! con (sql/format query))))
 
+;; features
+
 (defn places-list-features [con places-list-id]
   (let [query {:select [:place_feature.* :feature.title :feature.icon]
                :from [[:place_feature]]
@@ -77,6 +69,15 @@
                       [:place] [:= :place.id :place_feature.place_id]
                       [:places_list_place] [:= :places_list_place.place_id :place.id]]
                :where [:= :places_list_place.places_list_id [:cast places-list-id :uuid]]
+               :order-by [[:place_feature.priority :desc] [:place_feature.created_at :asc]]}
+        results (jdbc/query con (sql/format query))]
+    results))
+
+(defn place-features [con place-id]
+  (let [query {:select [:place_feature.* :feature.title :feature.icon]
+               :from [[:place_feature]]
+               :join [[:feature] [:= :feature.id :place_feature.feature_id]]
+               :where [:= :place_feature.place_id [:cast place-id :uuid]]
                :order-by [[:place_feature.priority :desc] [:place_feature.created_at :asc]]}
         results (jdbc/query con (sql/format query))]
     results))
@@ -109,6 +110,28 @@
   (let [query {:delete-from :place_feature
                :where [:= :id [:cast id :uuid]]}]
     (jdbc/execute! con (sql/format query))))
+
+;; files
+
+(defn places-list-files [con places-list-id]
+  (let [query {:select [:place_file.* :file.server_url :file.link]
+               :from [[:place_file]]
+               :join [[:file] [:= :file.id :place_file.file_id]
+                      [:place] [:= :place.id :place_file.place_id]
+                      [:places_list_place] [:= :places_list_place.place_id :place.id]]
+               :where [:= :places_list_place.places_list_id [:cast places-list-id :uuid]]
+               :order-by [[:place_file.priority :desc]]}
+        results (jdbc/query con (sql/format query))]
+    results))
+
+(defn place-files [con place-id]
+  (let [query {:select [:place_file.* :file.server_url :file.link]
+               :from [[:place_file]]
+               :join [[:file] [:= :file.id :place_file.file_id]]
+               :where [:= :place_file.place_id [:cast place-id :uuid]]
+               :order-by [[:place_file.priority :desc]]}
+        results (jdbc/query con (sql/format query))]
+    results))
 
 (defn find-place-file [con place-id file-id]
   (let [query {:select [:*]

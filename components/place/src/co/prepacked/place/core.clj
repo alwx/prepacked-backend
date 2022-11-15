@@ -10,13 +10,26 @@
 (defn all-places []
   (store/all-places))
 
-(defn places-with-all-dependencies [con city-id places-list-id]
+(defn place-with-all-dependencies [place-id]
+  (jdbc/with-db-transaction [con (database/db)]
+    (if-let [place (store/find-by-id con place-id)]
+      (let [features (store/place-features con place-id)
+            files (store/place-files con place-id)]
+        [true (assoc place
+                :features features
+                :files files)])
+      [false {:errors {:place ["Place not found."]} :-code 404}])))
+
+(defn places-for-places-list-with-all-dependencies [con city-id places-list-id]
   (let [places (store/places con city-id places-list-id)
-        features (->> (store/places-list-features con places-list-id)
+        features (->> 
+                   (store/places-list-features con places-list-id)
                    (group-by :place_id))
-        files (->> (store/places-list-files con places-list-id)
+        files (->> 
+                (store/places-list-files con places-list-id)
                 (group-by :place_id))
-        places' (->> places
+        places' (->> 
+                  places
                   (mapv (fn [{:keys [id] :as place}]
                           (assoc place
                             :features (get features id [])

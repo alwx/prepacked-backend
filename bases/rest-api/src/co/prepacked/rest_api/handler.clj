@@ -122,6 +122,11 @@
         (handle-result res))
       (handle-invalid-spec))))
 
+(defn get-place [req]
+  (let [place-id (-> req :parameters :path :place_id)
+        [_ res] (place/place-with-all-dependencies place-id)]
+    (handle-result res)))
+
 (defn edit-place [req]
   (let [place-id (-> req :parameters :path :place_id)
         place (-> req :parameters :body)]

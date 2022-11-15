@@ -13,14 +13,38 @@
             :spec {:address spec/non-empty-string?
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
-                   :priority int?}}))
+                   :priority int?
+                   :osm_place_id int?
+                   :osm_lat float?
+                   :osm_lon float?
+                   :osm_amenity string?
+                   :osm_city string?
+                   :osm_city_district string?
+                   :osm_country_code string?
+                   :osm_house_number string?
+                   :osm_postcode string?
+                   :osm_road string?
+                   :osm_suburb string?
+                   :osm_display_name string?}}))
 
 (def update-place
   (ds/spec {:name :core/update-place
             :spec {:address spec/non-empty-string?
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
-                   :priority int?}}))
+                   :priority int?
+                   :osm_place_id int?
+                   :osm_lat float?
+                   :osm_lon float?
+                   :osm_amenity string?
+                   :osm_city string?
+                   :osm_city_district string?
+                   :osm_country_code string?
+                   :osm_house_number string?
+                   :osm_postcode string?
+                   :osm_road string?
+                   :osm_suburb string?
+                   :osm_display_name string?}}))
 
 ;; operations with `place-features`
 

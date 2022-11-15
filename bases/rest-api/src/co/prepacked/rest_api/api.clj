@@ -198,7 +198,7 @@
     [""
      {:post {:summary "sends a request to OSM provider to fetch data about a specific address"
             :parameters {:body place-spec/fetch-osm-data}
-            :handler handler/places}}]]
+            :handler handler/fetch-osm-data}}]]
    
    ["/places" 
     {:middleware [middleware/wrap-authorization]
@@ -212,6 +212,8 @@
              :handler handler/add-place}}]
     ["/:place_id"
      {:parameters {:path {:place_id spec/uuid?}}
+      :get {:summary "get a place with all the dependencies (features, files, etc)"
+            :handler handler/get-place}
       :put {:summary "update a place"
             :parameters {:body place-spec/update-place}
             :handler handler/edit-place}

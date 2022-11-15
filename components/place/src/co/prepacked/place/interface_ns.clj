@@ -4,7 +4,9 @@
 
 (def all-places core/all-places)
 
-(def places-with-all-dependencies core/places-with-all-dependencies)
+(def place-with-all-dependencies core/place-with-all-dependencies)
+
+(def places-for-places-list-with-all-dependencies core/places-for-places-list-with-all-dependencies)
 
 (def place-by-id core/place-by-id)
 

@@ -21,7 +21,7 @@
 
 (defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
   (jdbc/with-db-transaction [con (database/db)]
-    (let [[_ places] (place/places-with-all-dependencies con city_id id)
+    (let [[_ places] (place/places-for-places-list-with-all-dependencies con city_id id)
           features (store/places-list-features con id)]
       (assoc places-list
              :places places
