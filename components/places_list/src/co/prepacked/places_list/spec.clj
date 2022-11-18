@@ -50,8 +50,10 @@
 (def add-place-to-places-list
   (ds/spec {:name :core/add-place-to-places-list
             :spec {:place_id spec/uuid?
-                   :comment string?}}))
+                   :comment string?
+                   :priority int?}}))
 
 (def update-place-in-places-list
   (ds/spec {:name :core/update-place-in-places-list
-            :spec {:comment string?}}))
+            :spec {:comment string?
+                   :priority int?}}))

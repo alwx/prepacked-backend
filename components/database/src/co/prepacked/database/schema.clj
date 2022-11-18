@@ -137,6 +137,7 @@
      [:place_id :uuid "REFERENCES place(id)"]
      [:user_id :uuid "REFERENCES app_user(id)"]
      [:comment :text]
+     [:priority :integer "DEFAULT 0 NOT NULL"]
      [:created_at :timestamp]
      [:updated_at :timestamp]]
     {:conditional? true})

@@ -148,7 +148,7 @@
 (defn insert-places-list-place! [con input]
   (let [query {:insert-into [:places_list_place]
                :values [(-> input
-                            (select-keys [:places_list_id :place_id :user_id :comment])
+                            (select-keys [:places_list_id :place_id :user_id :comment :priority])
                             (update :places_list_id database/->uuid)
                             (update :place_id database/->uuid)
                             (update :user_id database/->uuid)
@@ -158,7 +158,7 @@
 (defn update-places-list-place! [con places-list-id place-id input]
   (let [query {:update :places_list_place
                :set    (-> input
-                           (select-keys [:comment])
+                           (select-keys [:comment :priority])
                            (database/add-now-timestamps [:updated_at]))
                :where  [:and
                         [:= :places_list_id [:cast places-list-id :uuid]]

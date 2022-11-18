@@ -60,6 +60,17 @@
                :where [:= :id [:cast id :uuid]]}]
     (jdbc/execute! con (sql/format query))))
 
+;; place lists
+
+(defn places-lists [con place-id]
+  (let [query {:select [:places_list_place.* :places_list.slug :places_list.title]
+               :from [[:places_list_place]]
+               :join [[:places_list] [:= :places_list.id :places_list_place.places_list_id]]
+               :where [:= :places_list_place.place_id [:cast place-id :uuid]]
+               :order-by [[:places_list_place.priority :desc] [:places_list_place.created_at :asc]]}
+        results (jdbc/query con (sql/format query))]
+    results))
+
 ;; features
 
 (defn places-list-features [con places-list-id]

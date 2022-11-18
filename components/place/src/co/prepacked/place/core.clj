@@ -14,10 +14,12 @@
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [place (store/find-by-id con place-id)]
       (let [features (store/place-features con place-id)
-            files (store/place-files con place-id)]
+            files (store/place-files con place-id)
+            places-lists (store/places-lists con place-id)]
         [true (assoc place
                 :features features
-                :files files)])
+                :files files
+                :places_lists places-lists)])
       [false {:errors {:place ["Place not found."]} :-code 404}])))
 
 (defn places-for-places-list-with-all-dependencies [con city-id places-list-id]
