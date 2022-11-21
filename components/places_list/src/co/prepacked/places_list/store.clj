@@ -13,7 +13,7 @@
     results))
 
 (defn city-files [con city-id]
-  (let [query {:select [:places_list_file.* :file.server_url :file.link]
+  (let [query {:select [:places_list_file.* :file.server_url :file.link :file.copyright]
                :from [[:places_list_file]]
                :join [[:file] [:= :file.id :places_list_file.file_id]
                       [:places_list] [:= :places_list.id :places_list_file.places_list_id]]
@@ -100,6 +100,15 @@
     (jdbc/execute! con (sql/format query))))
 
 ;; operations with `places-list-files`
+
+(defn places-list-files [con places-list-id]
+  (let [query {:select [:places_list_file.* :file.server_url :file.link :file.copyright]
+               :from [[:places_list_file]]
+               :join [[:file] [:= :file.id :places_list_file.file_id]]
+               :where [:= :places_list_file.places_list_id [:cast places-list-id :uuid]]
+               :order-by [[:places_list_file.priority :desc]]}
+        results (jdbc/query con (sql/format query))]
+    results))
 
 (defn find-places-list-file [con places-list-id file-id]
   (let [query {:select [:*]

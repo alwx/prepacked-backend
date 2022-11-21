@@ -22,10 +22,12 @@
 (defn- add-places-list-dependencies [{:keys [id city_id] :as places-list}]
   (jdbc/with-db-transaction [con (database/db)]
     (let [[_ places] (place/places-for-places-list-with-all-dependencies con city_id id)
-          features (store/places-list-features con id)]
+          features (store/places-list-features con id)
+          files (store/places-list-files con id)]
       (assoc places-list
              :places places
-             :features features))))
+             :features features
+             :files files))))
 
 (defn places-list-with-all-dependencies [city-slug places-list-slug]
   (if-let [{city-id :id} (city/city-by-slug city-slug)]
@@ -184,7 +186,7 @@
                                        :user_id (:id auth-user)})]
               (store/insert-places-list-place! con input')
               (if-let [places-list-place (store/find-places-list-place con city-places-list-id (:place_id input'))]
-                [true places-list-place]
+                [true {:places_list_place places-list-place}]
                 [false {:errors {:other ["Cannot add the place to the list in the database."]} :-code 500}])))
           [false {:errors {:place ["Place with the specified id doesn't exist."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
@@ -198,7 +200,7 @@
           (let [input' (merge places-list-place input)]
             (store/update-places-list-place! con city-places-list-id place-id input')
             (if-let [places-list-place' (store/find-places-list-place con city-places-list-id place-id)]
-              [true places-list-place']
+              [true {:places_list_place places-list-place'}]
               [false {:errors {:other ["Cannot update the place in the database."]} :-code 500}]))
           [false {:errors {:other ["Cannot find the specified place in the place list."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
