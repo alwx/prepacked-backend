@@ -268,8 +268,8 @@
 (defn edit-places-list-file [req]
   (let [slug (-> req :params :slug)
         places-list-slug (-> req :params :places_list_slug)
-        file-id (-> req :params :path :file_id)
-        place-file (-> req :params :place_file)]
+        file-id (-> req :params :file_id)
+        place-file (-> req :params :places_list_file)]
     (if (s/valid? places-list-spec/update-file-in-places-list place-file)
       (let [[_ res] (places-list/update-file-in-places-list! slug places-list-slug file-id place-file)]
         (handle-result res))
