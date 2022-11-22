@@ -49,8 +49,8 @@
   (DELETE  "/cities/:slug/places-lists/:places_list_slug" [] handler/delete-places-list)
   
   (POST    "/cities/:slug/places-lists/:places_list_slug/features" [] handler/add-places-list-feature)
-  (PUT     "/cities/:slug/places-lists/:places_list_slug/features/:place_id" [] handler/edit-places-list-feature)
-  (DELETE  "/cities/:slug/places-lists/:places_list_slug/features/:place_id" [] handler/delete-places-list-feature)
+  (PUT     "/cities/:slug/places-lists/:places_list_slug/features/:feature_id" [] handler/edit-places-list-feature)
+  (DELETE  "/cities/:slug/places-lists/:places_list_slug/features/:feature_id" [] handler/delete-places-list-feature)
   
   (POST    "/cities/:slug/places-lists/:places_list_slug/files" [] handler/form-upload-places-list-file)
   (PUT     "/cities/:slug/places-lists/:places_list_slug/files/:file_id" [] handler/edit-places-list-file)
