@@ -178,7 +178,7 @@
 (defn add-place-to-places-list! [auth-user city-slug places-list-slug input]
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
-      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
+      (if-let [{city-places-list-id :id :as places-list} (store/find-by-slug con city-id places-list-slug)]
         (if (place/place-by-id con (:place_id input))
           (if (store/find-places-list-place con city-places-list-id (:place_id input))
             [false {:errors {:slug ["The place is already added to the specified places list."]} :-code 400}]
@@ -186,7 +186,8 @@
                                        :user_id (:id auth-user)})]
               (store/insert-places-list-place! con input')
               (if-let [places-list-place (store/find-places-list-place con city-places-list-id (:place_id input'))]
-                [true {:places_list_place places-list-place}]
+                [true {:places_list_place places-list-place 
+                       :places_list places-list}]
                 [false {:errors {:other ["Cannot add the place to the list in the database."]} :-code 500}])))
           [false {:errors {:place ["Place with the specified id doesn't exist."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])
@@ -195,12 +196,13 @@
 (defn update-place-in-places-list! [city-slug places-list-slug place-id input]
   (jdbc/with-db-transaction [con (database/db)]
     (if-let [{city-id :id} (city/city-by-slug city-slug)]
-      (if-let [{city-places-list-id :id} (store/find-by-slug con city-id places-list-slug)]
+      (if-let [{city-places-list-id :id :as places-list} (store/find-by-slug con city-id places-list-slug)]
         (if-let [places-list-place (store/find-places-list-place con city-places-list-id place-id)]
           (let [input' (merge places-list-place input)]
             (store/update-places-list-place! con city-places-list-id place-id input')
             (if-let [places-list-place' (store/find-places-list-place con city-places-list-id place-id)]
-              [true {:places_list_place places-list-place'}]
+              [true {:places_list_place places-list-place' 
+                     :places_list places-list}]
               [false {:errors {:other ["Cannot update the place in the database."]} :-code 500}]))
           [false {:errors {:other ["Cannot find the specified place in the place list."]} :-code 404}])
         [false {:errors {:other ["Cannot find the places list in the database."]} :-code 404}])

@@ -17,7 +17,6 @@
   (GET     "/cities/:slug" [] handler/city-with-all-dependencies)
   (GET     "/cities/:slug/places-lists/:places_list_slug" [] handler/places-list-with-all-dependencies)
   (GET     "/features" [] handler/features)
-  (POST    "/places/:place_id" [] handler/get-place)
   (POST    "/users/login" [] handler/login)
   (POST    "/users" [] handler/register))
 
