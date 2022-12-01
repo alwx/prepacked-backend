@@ -68,14 +68,14 @@
            (when-not (.exists log)
              (io/make-parents log))
            (if (.exists log)
-             (if (<= (.lastModified log) (.getTimeInMillis prev-cal))
+             (when (<= (.lastModified log) (.getTimeInMillis prev-cal))
                (shift-log-period log path prev-cal))
              (.createNewFile log))
            (spit path (with-out-str (println output-str)) :append true)
            (catch IOException _)))))})
 
 (defn init []
-  (if (= "LOCAL" (env/env :environment))
+  (if (or true (= "LOCAL" (env/env :environment)))
     (timbre/info "Initialized logging. Using console to print logs.")
     (do
       (timbre/set-config! {:level     :info

@@ -12,14 +12,14 @@
     results))
 
 (defn places [con city-id places-list-id]
-  (let [query {:select [:place.* :places_list_place.comment]
+  (let [query {:select [:place.* :places_list_place.comment [:places_list_place.priority :list_priority]]
                :from [[:place]]
                :join [[:places_list_place] [:= :place.id :places_list_place.place_id]
                       [:places_list] [:= :places_list_place.places_list_id :places_list.id]]
                :where [:and
                        [:= :places_list.city_id [:cast city-id :uuid]]
                        [:= :places_list.id [:cast places-list-id :uuid]]]
-               :order-by [[:place.priority :desc]]}
+               :order-by [[:list_priority :desc] [:place.priority :desc]]}
         results (jdbc/query con (sql/format query))]
     results))
 

@@ -1,8 +1,8 @@
 (ns co.prepacked.places-list.store
   (:require [clojure.data.json :as json]
-            [clojure.java.jdbc :as jdbc]
-            [honey.sql :as sql]
-            [co.prepacked.database.interface-ns :as database]))
+    [clojure.java.jdbc :as jdbc]
+    [honey.sql :as sql]
+    [co.prepacked.database.interface-ns :as database]))
 
 (defn places-lists [con city-id]
   (let [query {:select [:*]
@@ -37,20 +37,22 @@
 (defn insert-places-list! [con input]
   (let [query {:insert-into [:places_list]
                :values [(-> input
-                            (select-keys [:user_id :city_id :slug :title :description :priority :shown_features])
-                            (update :user_id database/->uuid)
-                            (update :city_id database/->uuid)
-                            (update :shown_features #(vector :cast (json/write-str %) :jsonb))
-                            (database/add-now-timestamps [:created_at :updated_at]))]}]
+                          (select-keys [:user_id :city_id :slug :title :description :priority :shown_features :tags])
+                          (update :user_id database/->uuid)
+                          (update :city_id database/->uuid)
+                          (update :shown_features #(vector :cast (json/write-str %) :jsonb))
+                          (update :tags #(vector :cast (json/write-str %) :jsonb))
+                          (database/add-now-timestamps [:created_at :updated_at]))]}]
     (jdbc/execute! con (sql/format query))))
 
 (defn update-places-list! [con id input]
   (let [query {:update :places_list
                :set    (-> input
-                           (select-keys [:city_id :slug :title :description :priority :shown_features])
-                           (update :city_id database/->uuid)
-                           (update :shown_features #(vector :cast (json/write-str %) :jsonb))
-                           (database/add-now-timestamps [:updated_at]))
+                         (select-keys [:city_id :slug :title :description :priority :shown_features :tags])
+                         (update :city_id database/->uuid)
+                         (update :shown_features #(vector :cast (json/write-str %) :jsonb))
+                         (update :tags #(vector :cast (json/write-str %) :jsonb))
+                         (database/add-now-timestamps [:updated_at]))
                :where  [:= :id [:cast id :uuid]]}]
     (jdbc/execute! con (sql/format query))))
 
@@ -80,17 +82,17 @@
 (defn insert-places-list-feature! [con input]
   (let [query {:insert-into [:places_list_feature]
                :values [(-> input
-                            (select-keys [:places_list_id :feature_id :value :priority])
-                            (update :places_list_id database/->uuid)
-                            (database/add-now-timestamps [:created_at :updated_at]))]}
+                          (select-keys [:places_list_id :feature_id :value :priority])
+                          (update :places_list_id database/->uuid)
+                          (database/add-now-timestamps [:created_at :updated_at]))]}
         result (jdbc/execute! con (sql/format query) {:return-keys ["id"]})]
     (:id result)))
 
 (defn update-places-list-feature! [con id input]
   (let [query {:update :places_list_feature
                :set    (-> input
-                           (select-keys [:value :priority])
-                           (database/add-now-timestamps [:updated_at]))
+                         (select-keys [:value :priority])
+                         (database/add-now-timestamps [:updated_at]))
                :where  [:= :id [:cast id :uuid]]}]
     (jdbc/execute! con (sql/format query))))
 
@@ -122,15 +124,15 @@
 (defn insert-places-list-file! [con input]
   (let [query {:insert-into [:places_list_file]
                :values [(-> input
-                            (select-keys [:places_list_id :file_id :priority])
-                            (update :places_list_id database/->uuid)
-                            (update :file_id database/->uuid))]}]
+                          (select-keys [:places_list_id :file_id :priority])
+                          (update :places_list_id database/->uuid)
+                          (update :file_id database/->uuid))]}]
     (jdbc/execute! con (sql/format query))))
 
 (defn update-places-list-file! [con places-list-id file-id input]
   (let [query {:update :places_list_file
                :set (-> input
-                        (select-keys [:priority]))
+                      (select-keys [:priority]))
                :where [:and
                        [:= :places_list_id [:cast places-list-id :uuid]]
                        [:= :file_id [:cast file-id :uuid]]]}]
@@ -157,18 +159,18 @@
 (defn insert-places-list-place! [con input]
   (let [query {:insert-into [:places_list_place]
                :values [(-> input
-                            (select-keys [:places_list_id :place_id :user_id :comment :priority])
-                            (update :places_list_id database/->uuid)
-                            (update :place_id database/->uuid)
-                            (update :user_id database/->uuid)
-                            (database/add-now-timestamps [:created_at :updated_at]))]}]
+                          (select-keys [:places_list_id :place_id :user_id :comment :priority])
+                          (update :places_list_id database/->uuid)
+                          (update :place_id database/->uuid)
+                          (update :user_id database/->uuid)
+                          (database/add-now-timestamps [:created_at :updated_at]))]}]
     (jdbc/execute! con (sql/format query))))
 
 (defn update-places-list-place! [con places-list-id place-id input]
   (let [query {:update :places_list_place
                :set    (-> input
-                           (select-keys [:comment :priority])
-                           (database/add-now-timestamps [:updated_at]))
+                         (select-keys [:comment :priority])
+                         (database/add-now-timestamps [:updated_at]))
                :where  [:and
                         [:= :places_list_id [:cast places-list-id :uuid]]
                         [:= :place-id [:cast place-id :uuid]]]}]

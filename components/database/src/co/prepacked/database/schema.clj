@@ -104,6 +104,7 @@
      [:description :text]
      [:priority :integer "DEFAULT 0 NOT NULL"]
      [:shown_features :jsonb "DEFAULT '[]'::jsonb"]
+     [:tags :jsonb "DEFAULT '[]'::jsonb"]
      [:created_at :timestamp]
      [:updated_at :timestamp]]
     {:conditional? true})

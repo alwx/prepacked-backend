@@ -9,7 +9,8 @@
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
                    :priority int?
-                   :shown_features spec/vector-of-strings?}}))
+                   :shown_features spec/vector-of-strings?
+                   :tags spec/vector-of-strings?}}))
 
 (def update-places-list
   (ds/spec {:name :core/update-places-list
@@ -17,7 +18,8 @@
                    :title spec/non-empty-string?
                    :description spec/non-empty-string?
                    :priority int?
-                   :shown_features spec/vector-of-strings?}}))
+                   :shown_features spec/vector-of-strings?
+                   :tags spec/vector-of-strings?}}))
 
 ;; operations with `places-list-features`
 
