@@ -21,9 +21,9 @@
         uuid (.toString (java.util.UUID/randomUUID))
         filename (format "%s.%s" uuid ext)]
     (try
-      (-> (images/resize-image tempfile ext 1200)
+      (-> (images/process-image tempfile ext 1200)
           (s3/put (format "images/%s" filename)))
-      (-> (images/resize-image tempfile ext 400)
+      (-> (images/process-image tempfile ext 400)
           (s3/put (format "thumbnail_images/%s" filename)))
       (add-file! con auth-user (merge {:server_url (s3/s3-public-server-url)
                                        :link filename}
