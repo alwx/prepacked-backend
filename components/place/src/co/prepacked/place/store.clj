@@ -33,13 +33,17 @@
 (defn find-by-id [con id]
   (find-by con :id [:cast id :uuid]))
 
+(defn find-by-slug [con slug]
+  (find-by con :slug slug))
+
 (def osm-keys [:osm_place_id :osm_lat :osm_lon :osm_amenity :osm_city :osm_city_district :osm_country_code 
                :osm_house_number :osm_postcode :osm_road :osm_suburb :osm_display_name])
 
 (defn insert-place! [con input]
   (let [query {:insert-into [:place]
                :values [(-> input
-                            (select-keys (into [:user_id :address :title :description :priority] 
+                            (select-keys (into [:user_id :address :title :description :priority
+                                                :slug :google_place_id]
                                                osm-keys))
                             (update :user_id database/->uuid)
                             (database/add-now-timestamps [:created_at :updated_at]))]}
@@ -49,7 +53,8 @@
 (defn update-place! [con id input]
   (let [query {:update :place
                :set    (-> input
-                           (select-keys (into [:address :title :description :priority]
+                           (select-keys (into [:address :title :description :priority
+                                               :slug :google_place_id]
                                               osm-keys))
                            (database/add-now-timestamps [:updated_at]))
                :where  [:= :id [:cast id :uuid]]}]

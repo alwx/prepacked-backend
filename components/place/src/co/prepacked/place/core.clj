@@ -22,6 +22,18 @@
                 :places_lists places-lists)])
       [false {:errors {:place ["Place not found."]} :-code 404}])))
 
+(defn place-with-all-dependencies-by-slug [slug]
+  (jdbc/with-db-transaction [con (database/db)]
+    (if-let [place (store/find-by-slug con slug)]
+      (let [features (store/place-features con (:id place))
+            files (store/place-files con (:id place))
+            places-lists (store/places-lists con (:id place))]
+        [true (assoc place
+                :features features
+                :files files
+                :places_lists places-lists)])
+      [false {:errors {:place ["Place not found."]} :-code 404}])))
+
 (defn places-for-places-list-with-all-dependencies [con city-id places-list-id]
   (let [places (store/places con city-id places-list-id)
         features (->> 

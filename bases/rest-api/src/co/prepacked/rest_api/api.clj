@@ -18,7 +18,9 @@
   (GET     "/cities/:slug/places-lists/:places_list_slug" [] handler/places-list-with-all-dependencies)
   (GET     "/features" [] handler/features)
   (POST    "/users/login" [] handler/login)
-  (POST    "/users" [] handler/register))
+  (POST    "/users" [] handler/register)
+  ;; TODO(alwx): all public API methods should be available under /public
+  (GET     "/public/places/:slug" [] handler/get-place-by-slug))
 
 (defroutes private-routes
   (POST    "/features" [] handler/add-feature)

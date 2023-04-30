@@ -24,7 +24,9 @@
                    :osm_postcode string?
                    :osm_road string?
                    :osm_suburb string?
-                   :osm_display_name string?}}))
+                   :osm_display_name string?
+                   :slug spec/slug?
+                   :google_place_id string?}}))
 
 (def update-place
   (ds/spec {:name :core/update-place
@@ -43,7 +45,9 @@
                    :osm_postcode string?
                    :osm_road string?
                    :osm_suburb string?
-                   :osm_display_name string?}}))
+                   :osm_display_name string?
+                   :slug spec/slug?
+                   :google_place_id string?}}))
 
 ;; operations with `place-features`
 

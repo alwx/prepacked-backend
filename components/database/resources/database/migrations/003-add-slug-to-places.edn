@@ -1,0 +1,5 @@
+{:up   ["ALTER TABLE place ADD COLUMN slug TEXT;"
+        "UPDATE place SET slug = id;"
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_places_slug ON place (slug);"]
+ :down ["DROP INDEX IF EXISTS idx_places_slug;"
+        "ALTER TABLE place DROP COLUMN slug TEXT;"]}

@@ -6,6 +6,8 @@
 
 (def place-with-all-dependencies core/place-with-all-dependencies)
 
+(def place-with-all-dependencies-by-slug core/place-with-all-dependencies-by-slug)
+
 (def places-for-places-list-with-all-dependencies core/places-for-places-list-with-all-dependencies)
 
 (def place-by-id core/place-by-id)

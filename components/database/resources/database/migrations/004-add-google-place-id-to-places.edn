@@ -1,0 +1,2 @@
+{:up   ["ALTER TABLE place ADD COLUMN google_place_id TEXT;"]
+ :down ["ALTER TABLE place DROP COLUMN google_place_id TEXT;"]}

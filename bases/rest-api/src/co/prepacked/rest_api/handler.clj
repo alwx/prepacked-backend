@@ -130,6 +130,11 @@
         [_ res] (place/place-with-all-dependencies place-id)]
     (handle-result res)))
 
+(defn get-place-by-slug [req]
+  (let [slug (-> req :params :slug)
+        [_ res] (place/place-with-all-dependencies-by-slug slug)]
+    (handle-result res)))
+
 (defn edit-place [req]
   (let [place-id (-> req :params :place_id)
         place (-> req :params :place)]
